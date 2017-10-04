@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Arch Linux) (preloaded format=pdflatex 2017.9.29)  4 OCT 2017 18:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Arch Linux) (preloaded format=pdflatex 2017.9.29)  4 OCT 2017 22:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -919,48 +919,77 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 155.
+(hyperref)                removing `math shift' on input line 163.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 155.
+(hyperref)                removing `subscript' on input line 163.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 155.
+(hyperref)                removing `math shift' on input line 163.
 
 [2]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 188.
+(hyperref)                removing `math shift' on input line 196.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 188.
+(hyperref)                removing `subscript' on input line 196.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 188.
+(hyperref)                removing `math shift' on input line 196.
 
-[3]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 276.
- [4]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 276.
+[3] [4]
+<L2_Acst.png, id=145, 578.16pt x 404.2302pt>
+File: L2_Acst.png Graphic file (type png)
+<use L2_Acst.png>
+Package pdftex.def Info: L2_Acst.png  used on input line 295. on input line 295
+.
+Package pdftex.def Info: Requested size: 300.29344pt x 209.95418pt on input lin
+e 295.
+<H1_Acst.png, id=146, 578.16pt x 405.6756pt>
+File: H1_Acst.png Graphic file (type png)
+<use H1_Acst.png>
+Package pdftex.def Info: H1_Acst.png  used on input line 296. on input line 296
+.
+Package pdftex.def Info: Requested size: 300.29344pt x 210.70491pt on input lin
+e 296.
+ [5 <./L2_Acst.png (PNG copy)> <./H1_Acst.png (PNG copy)>]
+<L2_Avar.png, id=157, 578.16pt x 404.712pt>
+File: L2_Avar.png Graphic file (type png)
+<use L2_Avar.png>
+Package pdftex.def Info: L2_Avar.png  used on input line 324. on input line 324
+.
+Package pdftex.def Info: Requested size: 300.29344pt x 210.20444pt on input lin
+e 324.
+<H1_Avar.png, id=158, 578.16pt x 402.303pt>
+File: H1_Avar.png Graphic file (type png)
+<use H1_Avar.png>
+Package pdftex.def Info: H1_Avar.png  used on input line 325. on input line 325
+.
+Package pdftex.def Info: Requested size: 300.29344pt x 208.9532pt on input line
+ 325.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 333.
+ [6 <./L2_Avar.png (PNG copy)> <./H1_Avar.png (PNG copy)>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 333.
  (./rapport.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 276.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 276.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 333.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 333.
 Package rerunfilecheck Info: File `rapport.out' has not changed.
-(rerunfilecheck)             Checksum: 1A8C1BE23F9033BFDA63CDE35A9FB838;554.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 276.
+(rerunfilecheck)             Checksum: 7C55496C8FE8730C101B9839B8B57971;704.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 333.
  ) 
 Here is how much of TeX's memory you used:
- 16052 strings out of 492990
- 279929 string characters out of 6138688
- 362685 words of memory out of 5000000
- 19433 multiletter control sequences out of 15000+600000
+ 16094 strings out of 492990
+ 280461 string characters out of 6138688
+ 362924 words of memory out of 5000000
+ 19458 multiletter control sequences out of 15000+600000
  538745 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 32i,12n,35p,10412b,335s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 32i,12n,40p,10412b,335s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/publ
@@ -974,10 +1003,10 @@ r/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-
 dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfo
 nts/symbols/msbm10.pfb>
-Output written on rapport.pdf (4 pages, 157120 bytes).
+Output written on rapport.pdf (6 pages, 12254933 bytes).
 PDF statistics:
- 195 PDF objects out of 1000 (max. 8388607)
- 172 compressed objects within 2 object streams
- 64 named destinations out of 1000 (max. 500000)
- 97 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 232 PDF objects out of 1000 (max. 8388607)
+ 202 compressed objects within 3 object streams
+ 76 named destinations out of 1000 (max. 500000)
+ 141 words of extra memory for PDF output out of 10000 (max. 10000000)
 

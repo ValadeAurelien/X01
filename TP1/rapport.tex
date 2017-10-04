@@ -77,14 +77,22 @@
 \begin{document}
 \maketitle
 
-Problème à résoudre : trouver $u \in H^1(\Omega)$ tel que  
+\section{Intruction et structure du code}
+
+
+Le but de ce TP est de résoudre le problème suivant : trouver $u \in H^1(\Omega)$ tel que  
 \begin{equation}
   \begin{cases}
     u - \nabla \big(A(x,y) \nabla u\big) = f \ms \mbox{sur}\ms \Omega\\
-    A(x,y) \nabla u = 0 \ms \mbox{sur}\ms \partial\Omega
+    A(x,y) \nabla u = 0 \ms \mbox{sur}\ms \partial\Omega.
   \end{cases}
 \end{equation}
 
+La structure du code ainsi que l'arrangement des dossiers ont été un peu modifiés. Tous les \texttt{*.msh} se trouvent dans le dossier \texttt{geoms/} avec un executable \texttt{bash} pour en créer à volonté.
+
+De plus, le corps de la routine principale se trouve maintenant dans \texttt{principal\_neumann\_aux.m}, cependant le fichier script est toujours bien \texttt{principal\_neumann.m}. 
+
+L'intégralité du code se trouve dans le fichier joint \texttt{codeTP1.zip}. 
 \section{Q1}
 
 Soit $\forall v\in H^1(\Omega)$.
@@ -273,6 +281,55 @@ et de même
 \begin{align}
   \norm{u}_{\smbox{semi~} H^1}^2 &= \big|U^T \K U \big|.
 \end{align}
+
+On peut donc lancer le programme et calculer les erreurs normalisées
+\begin{align}
+  err_{L^2} &= \frac{\norm{u_h-\pi_h u}_{L^2}}{\norm{\pi_h u}_{L^2}} \\
+  err_{\smbox{semi~} H^1} &= \frac{\norm{u_h-\pi_h u}_{\smbox{semi~}H^1}}{\norm{\pi_h u}_{\smbox{semi~}H^1}} 
+\end{align}
+tracées en \autoref{fig:acst}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.6\textwidth]{L2_Acst} \\
+  \includegraphics[width=.6\textwidth]{H1_Acst}
+  \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 dans le cas A constant.}
+  \label{fig:acst}
+\end{figure}
+
+
+\section{Q13-16}
+
+Cf codes commenté dans \texttt{matK\_elem.m} et \autoref{fig:avar}. Pour ce qui du calcul de la fonction $f(x,y)$, grace au code python de calcul formel, on peut trouver que pour
+\begin{equation}
+  A(x,y)=(\sin(\alpha \pi x)\sin(\alpha \pi y) + 2)
+\end{equation}
+et si on veut garder comme solution
+\begin{equation}
+  u(x,y)=\cos(\pi x)\cos(2\pi y)
+\end{equation}
+il faut poser
+\begin{equation}
+  \begin{aligned}[t]
+    f(x,y)=&~\pi^2\alpha\sin(\pi x)\sin(\pi\alpha y)\cos(2\pi y)\cos(\pi\alpha x)\\
+    &- 2\pi^2\alpha\sin(2\pi y)\sin(\pi\alpha x)\cos(\pi x)\cos(\pi\alpha y) \\
+    &+ 5\pi^2(\sin(\pi\alpha x)\sin(\pi\alpha y) + 2)\cos(\pi x)\cos(2\pi y) \\
+    &+ \cos(\pi x)\cos(2\pi y)
+  \end{aligned}
+\end{equation}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.6\textwidth]{L2_Avar} \\
+  \includegraphics[width=.6\textwidth]{H1_Avar}
+  \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 dans le cas A variable.}
+  \label{fig:avar}
+\end{figure}
+
+\section{Q17}
+
+On remarque que plus $\alpha$ est grand, plus les solutions sont sensibles au pas $h$, ce qui est cohérent avec les conditions d'échantillonement des fonctions périodiques.
 \end{document}
 
 %%% Local Variables:
