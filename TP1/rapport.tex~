@@ -1,0 +1,245 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+
+% MATH
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+%\newtheorem{cusdef}{Def}
+%\newtheorem{custhm}{Thm}
+%\newtheorem{cuscor}{Cor}
+%\newtheorem{cusrk}{Rk}
+\newenvironment{cusenv}[2]
+{\begin{samepage}\noindent\textbf{#1} -- (#2) \par}
+{\end{samepage} \bigskip}
+
+\newenvironment{cusdef}[1]
+{\begin{cusenv}{Def}{#1}}{\end{cusenv}}
+
+\newenvironment{custhm}[1]
+{\begin{cusenv}{Thm}{#1}}{\end{cusenv}}
+
+\newenvironment{cuscor}[1]
+{\begin{cusenv}{Cor}{#1}}{\end{cusenv}}
+
+\newenvironment{cusprop}[1]
+{\begin{cusenv}{Prop}{#1}}{\end{cusenv}}
+
+\newenvironment{cusrk}[1]
+{\begin{cusenv}{Rk}{#1}}{\end{cusenv}}	
+
+% MISE EN FORME
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{titlesec}
+\titleformat{\section}
+{\Large\bfseries\normalfont\scshape}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\large\bfseries\normalfont\scshape}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+{\bfseries\normalfont\scshape}{\thesubsubsection}{0.5em}{}
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
+
+
+% MACROS
+\usepackage{xparse}
+\newcommand{\smbox}[1]{\mbox{\footnotesize #1}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\M}{\mathbb{M}}
+\newcommand{\topo}{\mathcal{T}}
+\newcommand{\Lin}{\mathcal{L}}
+\newcommand{\Int}{\mbox{Int}\,}
+\newcommand{\st}{~\mbox{s.t.}~}
+\newcommand{\miff}{~\mbox{iff}~}
+\newcommand{\ie}{\emph{i.e.} }
+\newcommand{\ms}{~~~}
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\dual}[1]{#1'}
+\newcommand{\sca}[2]{\big<#1, #2\big>}
+\newcommand{\cont}[1]{\mathcal{C}^{#1}}
+\title{Rapport TP1}
+\author{Aurélien Valade}
+\date{}
+
+\begin{document}
+\maketitle
+
+Problème à résoudre : trouver $u \in H^1(\Omega)$ tel que  
+\begin{equation}
+  \begin{cases}
+    u - \nabla \big(A(x,y) \nabla u\big) = f \ms \mbox{sur}\ms \Omega\\
+    A(x,y) \nabla u = 0 \ms \mbox{sur}\ms \partial\Omega
+  \end{cases}
+\end{equation}
+
+\section{Q1}
+
+Soit $\forall v\in H^1(\Omega)$.
+
+\begin{align}
+  \label{eq:var}
+  &\int_{\Omega} uv - \int_{\Omega} \nabla \big(A(x,y) \nabla u\big) v = \int_{\Omega} f v && IPP \\
+  &\int_{\Omega} uv - \int_{\partial \Omega} \big(A(x,y) \nabla u\big) v + \int_{ \Omega} A(x,y) \nabla u \nabla v  = \int_{\Omega} f v  && CL\\
+  &\int_{\Omega} uv + \int_{ \Omega} A(x,y) \nabla u \nabla v  = \int_{\Omega} f v \\
+  &a(u,v) = l(v)
+\end{align}
+
+On a bien $a(u,v)$ et $l(v)$ (bi)linéaires. Montrons que $a(u,v)$ continue 
+\begin{align}
+  \label{eq:ac}
+  |a(u,v)| &\leq \left| \int A \nabla u \nabla v \right| + \left| \int u v \right| && \mbox{ineg. triang} \\
+           &\leq \beta \left| \int \nabla u \nabla v \right| + \left| \int u v \right| && \mbox{A bornée} \\
+           &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \norm{u}_{L^2}\norm{v}_{L^2} && \mbox{Cauchy Schwarz} \\
+           &\leq \beta \norm{\nabla u}_{H^1} \norm{\nabla v}_{H^1} + \norm{u}_{H^1}\norm{v}_{H^1} && \norm{\cdot}_{L^2}<\norm{\cdot}_{H^1} \\
+           &\leq (\beta+1) \norm{\nabla u}_{H^1} \norm{\nabla v}_{H^1}   \\
+\end{align}
+
+On a évidement $l(v)$ continue comme $f, v \in H^1(\Omega)$. 
+
+Montrons que $a(u,v)$ est coercive
+\begin{align}
+  \label{eq:co}
+  |a(u,u)| &\geq \left|\int A (\nabla u)^2 \right| + \left|\int (\nabla u)^2 \right| \\
+           &\geq \max(A) \left|\int (\nabla u)^2 \right| + \left|\int (\nabla u)^2 \right| \\
+           &\geq \xi \left|\int (\nabla u)^2 \right| + \left|\int (\nabla u)^2 \right| \\
+           &\geq \min(\xi,1) \norm{u}_{H^1}
+\end{align}
+
+\section{Q2-Q3}
+
+On onsidère uniquement $V_h \subset H^1(\Omega)$ de dimension finie, donc entièrement décrit par sa base $(\omega_I)_{1\leq I \leq N}$. Le problème se ramène donc à
+\begin{equation}
+  a(u,\omega_I) = l(\omega_I) \ms \forall 1\leq I\leq N.
+\end{equation}
+
+Si on projète $u$ sur la base des $(\omega_I)$ :
+\begin{equation}
+  u_h = \sum_{1}^{N} u_h^I \omega_I
+\end{equation}
+on retrouve le problème variationel entièrement discrétisé :
+\begin{equation}
+  \sum_J u_h^J a(\omega_I, \omega_J) = l(\omega_I) \ms \forall  1\leq J\leq N.   
+\end{equation}
+
+En posant les matrices et les vecteurs:
+\begin{align}
+  &U \in \R^{N}, \ms U_{I} = u_h^I, \\
+  &L \in \R^{N}, \ms L_{I} = \int f \omega_I, \\
+  &\K \in \R^{N\times N},\ms \K_{IJ} = \int A \nabla \omega_I \nabla \omega_J,  \\
+  &\M \in \R^{N\times N},\ms \M_{IJ} = \int \omega_I \omega_J,
+\end{align}
+on peut écrire le système sous forme matricielle :
+\begin{equation}
+  (\M+\K) U = L.
+\end{equation}
+
+\section{Q5-Q6}
+
+Cf codes.
+
+\section{Q7}
+
+\subsection{Calcul de $(\M_{IJ})$}
+
+Le produit des fonctions $\omega_I\omega_J$ est dans $\mathbb{P}^2$, on utilisera donc la formule
+\begin{equation}
+  \int_{\mathcal{T}_l} F d\Omega = \frac{\A_l}{3}\left(F\left(\frac{S_1+S_2}{2}\right) + F\left(\frac{S_1+S_3}{2}\right) + F\left(\frac{S_2+S_3}{2}\right) \right)
+\end{equation}
+
+Pour les $\M_{II}$, en prenant le sommet $I$ comme étant le sommet 1 sur la base locale, on a 
+\begin{align}
+  \int_{\mathcal{T}_l} (\omega_I)^2
+  &= \frac{1}{D^2} \int_x \int_y \big(y_{23} (x-x_3) - x_{23} (y-y_3)\big)^2 dx dy \\
+  &= \frac{-D}{3} = \frac{\A_l}{6}.
+\end{align}
+
+Pour les $\M_{IJ}$, en prenant les sommets $I, J$ comme étant respectivement les sommets 1, 2 dans la base locale, on a
+
+\begin{align}
+  \int_{\mathcal{T}_l} \omega_I \omega_J =
+  &= \frac{1}{D^2} \int_x \int_y \big(y_{23} (x-x_3) - x_{23} (y-y_3)\big)\big(y_{31} (x-x_1) - x_{31} (y-y_1)\big) dx dy \\
+  &= \frac{-D}{6} = \frac{\A}{12}.
+\end{align}
+
+En résumé
+\begin{equation}
+  \M_{IJ} =
+  \begin{cases}
+    \dfrac{\A_l}{6} \ms \mbox{si $I$ = $J$} \medskip\\
+    \dfrac{\A_l}{12} \ms \mbox{si} \ms \exists l < L \mbox{~~tq~~} S(I), S(J) \in \mathcal{T}_l \medskip\\
+    0 \ms \mbox{sinon}.
+  \end{cases}
+\end{equation}
+
+
+\subsection{Calcul de $(\K_{IJ})$}
+
+Le produit des fonctions $\nabla \omega_I \nabla \omega_J$ est dans $P^0$, on utilise donc la formule
+
+\begin{equation}
+  \int_{\mathcal{T}_l} F d\Omega = \frac{\A_l}{3}F\left(\frac{S_1+S_2+S_3}{3} \right)  
+\end{equation}
+
+Pour $I=J$, en prenant le sommet $I$ comme étant le sommet 1 sur la base locale, on a
+\begin{equation}
+  \int_{\mathcal{T}_l} (\nabla \omega_I)^2 = \frac{y_{23}^2-x_{23}^2}{4\A_l}
+\end{equation}
+et pour $I\neq J$, en prenant les sommets $I, J$ comme étant respectivement les sommets 1, 2 dans la base locale, on a
+\begin{equation}
+  \int_{\mathcal{T}_l} \nabla \omega_I \nabla \omega_J = \frac{y_{23}y_{31}-x_{23}x_{31}}{4\A_l}
+\end{equation}
+
+En résumé
+\begin{equation}
+  \K_{IJ} =
+  \begin{cases}
+    n_{i,1}n_{j,1} + n_{i,2}n_{j,2} \ms \mbox{si} \ms \exists l < L \mbox{~~tq~~} S(I), S(J) \in \mathcal{T}_l \mbox{~~avec~~} i=loc(I), j=loc(J)\medskip\\
+    0 \ms \mbox{sinon}.
+  \end{cases}
+\end{equation}
+avec $loc$ le changement de base global vers local, et $n\in\R^{3\times 2}$
+\begin{equation}
+  n = \left(
+  \begin{matrix}
+    y_{23} & x_{32} \\
+    y_{31} & x_{13} \\
+    y_{12} & x_{21} 
+  \end{matrix}
+  \right)
+\end{equation}
+
+\section{Q8}
+
+Cf codes
+
+\section{Q9}
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
