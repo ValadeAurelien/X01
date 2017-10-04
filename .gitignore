@@ -2,3 +2,6 @@
 *~
 *log
 *out
+*aux
+**/auto/
+**/__pycache__/
