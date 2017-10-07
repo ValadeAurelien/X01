@@ -84,8 +84,8 @@ else
 end
 
 AA = MM+KK;
-AAp = PP*AA*PP';
-LLp = PP*LL;
+AAp = inv(PP)*AA*PP;
+LLp = inv(PP)*LL;
 
 % inversion
 % ----------
@@ -93,8 +93,10 @@ UUp = AAp\LLp;
 
 % Expression de la solution dans toute la base
 % ———————
-UU = PP'*UUp;
+UU = PP*UUp;
 UU_exact = cos(pi*Coorneu(:,1)).*cos(2*pi*Coorneu(:,2));
+
+
 % visualisation
 % -------------
 if (visualisation>0)

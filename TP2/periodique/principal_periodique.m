@@ -23,8 +23,8 @@ namemshs = {'geoms_per/geomCarre1.msh', 'geoms_per/geomCarre2.msh', 'geoms_per/g
 
 rap_L2=zeros(20);
 rap_H1=zeros(20);
-for msh=1:13
-    %affichemaillage(namemshs{msh}, hs(msh));
+for msh=1:14
+    affichemaillage(namemshs{msh}, hs(msh));
     [diff_L2, norm_ex_L2, diff_H1, norm_ex_H1] = principal_periodique_aux(hs(msh), namemshs{msh}, visualisation, validation, Acst, alpha);
     disp([msh, hs(msh), diff_L2/norm_ex_L2, diff_H1/norm_ex_H1]);
     rap_L2(msh) = diff_L2/norm_ex_L2;
