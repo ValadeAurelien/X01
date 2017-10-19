@@ -124,9 +124,9 @@ On a évidement $l(v)$ continue comme $f, v \in H^1_0(\Omega)$.
 Montrons que $a(u,v)$ est coercive
 \begin{align}
   \label{eq:co}
-  |a(u,u)| &\geq \left|\int A (\nabla u)^2 \right| + \left|\int (\nabla u)^2 \right| \\
-           &\geq \max(A) \left|\int (\nabla u)^2 \right| + \left|\int (\nabla u)^2 \right| \\
-           &\geq \xi \left|\int (\nabla u)^2 \right| + \left|\int (\nabla u)^2 \right| \\
+  |a(u,u)| &\geq \left|\int A (\nabla u)^2 \right| + \left|\int u^2 \right| \\
+           &\geq \max(A) \left|\int (\nabla u)^2 \right| + \left|\int u^2 \right| \\
+           &\geq \xi \left|\int (\nabla u)^2 \right| + \left|\int u^2 \right| \\
            &\geq \min(\xi,1) \norm{u}_{H^1_0}
 \end{align}
 
@@ -164,8 +164,8 @@ on peut écrire le système sous forme matricielle :
 On peut se ramener à un problème de taille $N^0 = \mbox{dim}(V^0_h)$ en considérant la matrice
 \begin{gather}
   \Am = \M + \K \in \R^{N\times N } \\
-  \Am^0 \in \R^{d_0\times d_0} \\
-  \P \in \R^{d_0\times N} \\
+  \Am^0 \in \R^{N^0\times N^0} \\
+  \P \in \R^{N^0\times N} \\
   \Am^0 = \P\Am\P^T, ~ L^0 = \P L, ~ U^0 = \P U 
 \end{gather} 
 On construit la matrice $\P$ de la manière suivante
@@ -240,6 +240,30 @@ il faut poser
 
 \section{Q8}
 
+Montrons que le problème $a(u,v) = l(u) \ms \forall v \in V^h_{\#}$ est bien posé dans
+\begin{equation}
+  H^1_{\#}(\Omega) = \bigg\{ f \in H^1(\Omega), \mbox{tq $f$ est $L$ périodique} \bigg\}
+\end{equation}
+Montrons d'abord que $a$ est continue
+\begin{align}
+  \label{eq:ac}
+  |a(u,v)| &\leq \left| \int A \nabla u \nabla v \right| + \left| \int u v \right| && \mbox{ineg. triang} \\
+           &\leq \beta \left| \int \nabla u \nabla v \right| + \left| \int u v \right| && \mbox{A bornée} \\
+           &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \norm{u}_{L^2}\norm{v}_{L^2} && \mbox{Cauchy Schwarz} \\
+           &\leq \beta \norm{\nabla u}_{H^1_{\#}} \norm{\nabla v}_{H^1_{\#}} + \norm{u}_{H^1_{\#}}\norm{v}_{H^1_{\#}} && \norm{\cdot}_{L^2}<\norm{\cdot}_{H^1_{\#}} \\
+           &\leq (\beta+1) \norm{\nabla u}_{H^1_{\#}} \norm{\nabla v}_{H^1_{\#}}   \\
+\end{align}
+
+On a évidement $l(v)$ continue comme $f, v \in H^1_{\#}(\Omega)$. 
+
+Montrons que $a(u,v)$ est coercive
+\begin{align}
+  \label{eq:co}
+  |a(u,u)| &\geq \left|\int A (\nabla u)^2 \right| + \left|\int u^2 \right| \\
+           &\geq \max(A) \left|\int (\nabla u)^2 \right| + \left|\int u^2 \right| \\
+           &\geq \xi \left|\int (\nabla u)^2 \right| + \left|\int  u^2 \right| \\
+           &\geq \min(\xi,1) \norm{u}_{H^1_{\#}}
+\end{align}
 
 \section{Q9}
 
