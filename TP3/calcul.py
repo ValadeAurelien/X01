@@ -18,7 +18,7 @@ As = [ Matrix( [[1, 0], [0, 1]]),
 # --- Calc ---
 for A in As:
     flux = A*gradu
-    f = diff(flux[0], x) + diff(flux[1], y)
+    f = -diff(flux[0], x) - diff(flux[1], y)
     print()
     print (A)
     print(str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^"))

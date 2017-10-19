@@ -13,19 +13,19 @@ function val = f(x, y, Atype, epsilon)
 %A COMPLETER
 %val = ones(size(x));
 if (Atype == 1)
-    val = -2*pi^2*sin(pi*x).*sin(pi*y);
+    val = 2*pi^2*sin(pi*x).*sin(pi*y);
 elseif (Atype == 2)
-    val = -3*pi^2*sin(pi*x).*sin(pi*y);
+    val = 3*pi^2*sin(pi*x).*sin(pi*y);
 elseif (Atype == 3)
-    val = 2*pi^2*(-epsilon*(sin(2*pi*x/epsilon) + 3).*sin(pi*x) + ...
-                  2*cos(pi*x).*cos(2*pi*x/epsilon)).*sin(pi*y)/epsilon;
+    val = -2*pi^2*(-epsilon*(sin(2*pi*x/epsilon) + 3).*sin(pi*x) + ...
+                   2*cos(pi*x).*cos(2*pi*x/epsilon)).*sin(pi*y)/epsilon;
 elseif (Atype == 4)
-    val = pi^2*(-3*epsilon*(sin(2*pi*x/epsilon) + 2).*sin(pi*x) + ...
+    val = -pi^2*(-3*epsilon*(sin(2*pi*x/epsilon) + 2).*sin(pi*x) + ...
                 4*cos(pi*x).*cos(2*pi*x/epsilon)).*sin(pi*y)/epsilon;
 elseif (Atype == 5)
-    val = 4*pi^2*(-epsilon*(sin(2*pi*x/epsilon) + 1)*(sin(2*pi*x/epsilon) + 4).*sin(pi*x) + ...
-                  (sin(2*pi*x/epsilon) + 1).*cos(pi*x).*cos(2*pi*x/epsilon) + ...
-                  (sin(2*pi*x/epsilon) + 4).*cos(pi*x).*cos(2*pi*x/epsilon)).*sin(pi*y)/epsilon;
+    val = -4*pi^2*(-epsilon*(sin(2*pi*x/epsilon) + 1)*(sin(2*pi*x/epsilon) + 4).*sin(pi*x) + ...
+                   (sin(2*pi*x/epsilon) + 1).*cos(pi*x).*cos(2*pi*x/epsilon) + ...
+                   (sin(2*pi*x/epsilon) + 4).*cos(pi*x).*cos(2*pi*x/epsilon)).*sin(pi*y)/epsilon;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
