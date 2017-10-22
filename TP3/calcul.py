@@ -13,14 +13,17 @@ As = [ Matrix( [[1, 0], [0, 1]]),
        Matrix( [[1, 0], [0, 2]]),
        Matrix( [[2+2*sin(2*pi*x/epsilon), 0], [0, 4]] ),
        Matrix( [[2+2*sin(2*pi*x/epsilon), 0], [0, 4+sin(2*pi*x/epsilon)]] ),
-       (2+2*sin(2*pi*x/epsilon))*(4+sin(2*pi*x/epsilon))* Matrix( [[1, 0], [0, 1]] ) ]
+       (2+2*sin(2*pi*x/epsilon))*(4+sin(2*pi*y/epsilon))* Matrix( [[1, 0], [0, 1]] ) ]
 
 # --- Calc ---
 for A in As:
     flux = A*gradu
-    f = -diff(flux[0], x) - diff(flux[1], y)
+    f = - (diff(flux[0], x) + diff(flux[1], y))
     print()
-    print (A)
-    print(str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^"))
+    print ("A :", A)
+    print("u :", u)
+    print("gradu :", gradu)
+    print("flux :", flux)
+    print("f :", str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^"))
 
 

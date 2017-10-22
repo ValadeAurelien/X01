@@ -62,25 +62,31 @@ LL = MM*FF;
 % ———————————————————
 % matrice de projection 
 PP = eye(Nbpt, Nbpt);
-old_ar = Numaretes(1,:);
-for a=2:Nbaretes
-    Mat = [ Coorneu(old_ar(2), :) - Coorneu(old_ar(1), :) ; ...
-            Coorneu(Numaretes(a, 2), :) - Coorneu(Numaretes(a, 1), :) ...
-          ];
-    if det(Mat)
-        PP(Numaretes(a, 1), Numaretes(a, 1)) = 4;
-    else
-        PP(Numaretes(a, 1), Numaretes(a, 1)) = 2;
-    end
-    old_ar = Numaretes(a, :);
+% $$$ old_ar = Numaretes(1,:);
+% $$$ for a=2:Nbaretes
+% $$$     Mat = [ Coorneu(old_ar(2), :) - Coorneu(old_ar(1), :) ; ...
+% $$$             Coorneu(Numaretes(a, 2), :) - Coorneu(Numaretes(a, 1), :) ...
+% $$$           ];
+% $$$     if det(Mat)
+% $$$         PP(Numaretes(a, 1), Numaretes(a, 1)) = 4;
+% $$$     else
+% $$$         PP(Numaretes(a, 1), Numaretes(a, 1)) = 2;
+% $$$     end
+% $$$     old_ar = Numaretes(a, :);
+% $$$ end
+% $$$ Mat = [ Coorneu(old_ar(1), :) - Coorneu(old_ar(1), :) ; ...
+% $$$         Coorneu(Numaretes(1, 2), :) - Coorneu(Numaretes(1, 1), :) ...
+% $$$       ];
+% $$$ if det(Mat)
+% $$$     PP(Numaretes(1,1), Numaretes(1,1)) = 4;
+% $$$ else
+% $$$     PP(Numaretes(1,1), Numaretes(1,1)) = 2;
+% $$$ end
+for i=1:4
+    PP(i, i) = 4.;
 end
-Mat = [ Coorneu(old_ar(1), :) - Coorneu(old_ar(1), :) ; ...
-        Coorneu(Numaretes(1, 2), :) - Coorneu(Numaretes(1, 1), :) ...
-      ];
-if det(Mat)
-    PP(Numaretes(1,1), Numaretes(1,1)) = 4;
-else
-    PP(Numaretes(1,1), Numaretes(1,1)) = 2;
+for i=5:Nbaretes
+    PP(i, i) = 2.;
 end
 
 AA = MM+KK;

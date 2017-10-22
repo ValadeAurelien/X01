@@ -220,7 +220,7 @@ et si on veut garder comme solution
 il faut poser
 \begin{equation}
   \begin{aligned}[t]
-    f(x,y) =~& 2 \pi^2 \alpha \sin(\pi x) \sin(\pi \alpha x) \cos(2 \pi y) \cos(\pi \alpha y) - \\
+    f(x,y) =~&- 2 \pi^2 \alpha \sin(\pi x) \sin(\pi \alpha x) \cos(2 \pi y) \cos(\pi \alpha y) - \\
     &\pi^2 \alpha \sin(2 \pi y) \sin(\pi \alpha y) \cos(\pi x) \cos(\pi \alpha x) + \\
     &5 \pi^2 (\sin(\pi \alpha x) \sin(\pi \alpha y) + 2) \sin(\pi x) \sin(2 \pi y) + \\
     &\sin(\pi x) \sin(2 \pi y).
@@ -234,7 +234,7 @@ il faut poser
   \includegraphics[width=.48\textwidth]{dirichlet/H1_Acst} \\
   \includegraphics[width=.48\textwidth]{dirichlet/L2_Avar} 
   \includegraphics[width=.48\textwidth]{dirichlet/H1_Avar}
-  \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 dans le cas A constant.}
+  \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 pour un problème de dirichlet avec A constante (haut), A variable (bas).}
   \label{fig:acst}
 \end{figure}
 
@@ -307,11 +307,13 @@ il faut poser
 
 \begin{figure}
   \centering
-  \includegraphics[width=.48\textwidth]{periodique/L2_Acst} 
+  \includegraphics[width=.48\textwidth]{periodique/L2_Acst}
+  \hfill
   \includegraphics[width=.48\textwidth]{periodique/H1_Acst} \\
-  \includegraphics[width=.48\textwidth]{periodique/L2_Avar} 
+  \includegraphics[width=.48\textwidth]{periodique/L2_Avar}
+  \hfill
   \includegraphics[width=.48\textwidth]{periodique/H1_Avar}
-  \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 dans le cas A variable.}
+  \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 pour un problème périodique avec A constante (haut), A variable (bas)}
   \label{fig:avar}
 \end{figure}
 

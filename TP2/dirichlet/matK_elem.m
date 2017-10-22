@@ -36,10 +36,11 @@ end;
 
 if (Acst==0)
     % Transfo depuis le triangle unité
-    F_l = @(x,y) [(x3-x1)*x + (x2-x1)*y + x1 , ...
-                  (y3-y1)*x + (y2-y1)*y + y1];
+    F_l = @(x,y) [(x2-x1)*x + (x3-x1)*y + x1 , ...
+                  (y2-y1)*x + (y3-y1)*y + y1];
     % ... Et son jacobien
-    J_F = [ x3-x1 , x2-x1 ; y3-y1 , y2-y1];
+    J_F = [ x2-x1 , x3-x1 ; ...
+            y2-y1 , y3-y1];
     Jt_inv = inv(J_F');
     det_J = det(J_F);
 
@@ -52,7 +53,7 @@ if (Acst==0)
     X4 = F_l(3/5,1/5);
 
     % Integrale de A
-    Aq = w1*A(X1(1), X1(2), Acst, alpha) + ...
+    Aq = w1  * A(X1(1), X1(2), Acst, alpha) + ...
          w234*(A(X2(1), X2(2), Acst, alpha) + ...
                A(X3(1), X3(2), Acst, alpha) + ...
                A(X4(1), X4(2), Acst, alpha));

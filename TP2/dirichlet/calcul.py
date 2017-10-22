@@ -1,17 +1,23 @@
-##
 from sympy import *
 
 x = Symbol('x')
 y = Symbol('y')
-b = Symbol('alpha')
+epsilon = Symbol('epsilon')
 
+# --- U ---
 u = sin(pi*x)*sin(2*pi*y)
-A = sin(b*pi*x)*sin(b*pi*y)+2
-#A = 1
+gradu = Matrix( [[diff(u, x)], [diff(u, y)]] )
 
-f = u - diff(A, x) * diff(u, x) + diff(A, y) * diff(u, y) - A *( diff(diff(u, x), x) + diff(diff(u, y), y))
+# --- A ---
+As = [ Matrix( [[1, 0], [0, 1]]),
+       (sin(alpha*pi*x)*sin(alpha*pi*y)+2) * Matrix( [[1, 0], [0, 1]]) ]
 
-#print(f)
-print(str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^"))
+# --- Calc ---
+for A in As:
+    flux = A*gradu
+    f = u - ( diff(flux[0], x) + diff(flux[1], y) )
+    print()
+    print (A)
+    print(str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^"))
 
 
