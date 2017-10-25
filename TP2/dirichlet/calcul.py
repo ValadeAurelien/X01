@@ -16,8 +16,14 @@ As = [ Matrix( [[1, 0], [0, 1]]),
 for A in As:
     flux = A*gradu
     f = u - ( diff(flux[0], x) + diff(flux[1], y) )
+     print()
+    print("*************************************************")
+    print ("A :", A[0,0], A[0, 1], "\n   ",  A[1,0], A[1, 1])
     print()
-    print (A)
-    print(str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^"))
-
-
+    print("u :", u)
+    print()
+    print("gradu :", gradu[0], "\n       ", gradu[1])
+    print()
+    print("flux :", flux[0], "\n      ", flux[1])
+    print()
+    print("f :", str(simplify(f)).replace(")*c", ").*c").replace(")*s", ").*s").replace("**", "^").replace(" + ", " + ...\n    ").replace(" - ", " - ...\n    "))

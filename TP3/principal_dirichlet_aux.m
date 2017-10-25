@@ -33,54 +33,36 @@ LL = zeros(Nbpt,1);     % vecteur second membre
 for l=1:Nbtri
    % Coordonnees des sommets du triangles
     % A COMPLETER
-    S1=Coorneu(Numtri(l,1), :);
-    S2=Coorneu(Numtri(l,2), :);
-    S3=Coorneu(Numtri(l,3), :);
+    S1=Coorneu(Numtri(l, 1), :);
+    S2=Coorneu(Numtri(l, 2), :);
+    S3=Coorneu(Numtri(l, 3), :);
     % calcul des matrices elementaires du triangle l 
     
     Kel=matK_elem(S1, S2, S3, Atype, epsilon);
     Mel=matM_elem(S1, S2, S3);
-    
     % On fait l'assemmblage de la matrice globale et du second membre
     % A COMPLETER
     for i=1:3
-        I = Numtri(l,i);
+        I = Numtri(l, i);
         for j=1:3
-            J = Numtri(l,j);
-            MM(I,J) = MM(I,J) + Mel(i, j);
-            KK(I,J) = KK(I,J) + Kel(i, j);
+            J = Numtri(l, j);
+            MM(I, J) = MM(I, J) + Mel(i, j);
+            KK(I, J) = KK(I, J) + Kel(i, j);
         end
     end     
 end % for l
 
+
+    
 % Calcul du second membre L
 % -------------------------
-	% A COMPLETER
-	% utiliser la routine f.m
+% A COMPLETER
+% utiliser la routine f.m
 FF = f(Coorneu(:,1), Coorneu(:,2), Atype, epsilon);
 LL = MM*FF;
-
-% Projection sur l espace V_0
-% ———————————————————
-% matrice de projection 
-PPtmp = eye(Nbpt, Nbpt);
-for a=1:Nbaretes
-    PPtmp(Numaretes(a, 1), Numaretes(a, 1)) = 0;
-end
-c=1;
-PP=zeros(Nbaretes, Nbpt);
-for i=1:Nbpt    
-    if PPtmp(i,i)>0
-        PP(c,:)=PPtmp(i,:);
-        c=c+1;
-    end
-end
-% $$$ for a=1:Nbaretes
-% $$$     V = zeros(Nbpt,1); 
-% $$$     V(Numaretes(10,1),1) = 1;
-% $$$     disp((PP*V)==zeros(Nbpt-Nbaretes,1));
-% $$$ end
 AA = KK;
+
+PP = horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes));
 AA0 = PP*AA*PP';
 LL0 = PP*LL;
 
@@ -92,14 +74,26 @@ UU0 = AA0\LL0;
 % ———————
 UU = PP'*UU0;
 UU_exact = sin(pi*Coorneu(:,1)).*sin(pi*Coorneu(:,2));
+
+AA_exact = zeros(Nbpt, 1);
+for i=1:Nbpt
+    Amat = A(Coorneu(i,1), Coorneu(i,2), Atype, epsilon);
+    AA_exact(i) = Amat(1);
+end
+
 % visualisation
 % -------------
 if (visualisation>0)
     affiche(abs(UU-UU_exact), Numtri, Coorneu, sprintf(['Dirichlet diff - ' '%s'], namemsh));
     if (visualisation>1)
-            affiche(UU, Numtri, Coorneu, sprintf(['Dirichlet UU - %s'], namemsh));           
-            affiche(UU_exact, Numtri, Coorneu, sprintf(['Dirichlet ' ...
-                                'UU exact - %s'], namemsh));
+        affiche(UU, Numtri, Coorneu, sprintf(['Dirichlet UU - %s'], namemsh));           
+        affiche(UU_exact, Numtri, Coorneu, sprintf(['Dirichlet ' ...
+                            'UU exact - %s'], namemsh));
+        if (visualisation>2)
+            affiche(AA_exact, Numtri, Coorneu, sprintf(['Dirichlet AA - %s'], namemsh));           
+            affiche(FF, Numtri, Coorneu, sprintf(['Dirichlet FF - ' ...
+                                '%s'], namemsh));
+        end
     end
 end
 

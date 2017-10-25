@@ -1,3 +1,4 @@
+
 function [Kel] = matK_elem(S1, S2, S3, Atype, epsilon)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % mat_elem :
@@ -31,7 +32,8 @@ x3 = S3(1); y3 = S3(2);
 % D est, au signe pres, deux fois l'aire du triangle
 D = ((x2-x1)*(y3-y1) - (y2-y1)*(x3-x1));
 if (abs(D) <= eps) 
-  error('l aire d un triangle est nulle!!!'); 
+    disp('l aire d un triangle est nulle!!!');
+    error('l aire d un triangle est nulle!!!'); 
 end;
 
 % Transfo depuis le triangle unité
@@ -61,7 +63,10 @@ norm_ref(1, :) = [-1, -1];
 norm_ref(2, :) = [1, 0];
 norm_ref(3, :) = [0, 1];
 
-
+% $$$ Aval = A((x1+x2+x3)/3, (y1+y2+y3)/3, Atype, epsilon)/2;
+% $$$ disp(sprintf('%f %f %f %f\n%f %f %f %f\n\n', ...
+% $$$              Aval(1), Aval(2), Aval(3), Aval(4), ...
+% $$$              Aq(1), Aq(2), Aq(3), Aq(4)) );            
 
 % calcul de la matrice de raideur
 % -------------------------------
@@ -72,7 +77,8 @@ for i=1:3
         Kel(i,j) = ( (Aq*Jt_inv*(norm_ref(i,:))')' * (Jt_inv*norm_ref(j,:)') ) * ...
             abs(det_J);
     end; % j
-end; % i
+end; 
+% i
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                        fin de la routine
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

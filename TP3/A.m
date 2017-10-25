@@ -20,7 +20,7 @@ elseif (Atype == 3)
 elseif (Atype == 4)
     val = [2+sin(2*pi*x/epsilon) 0 ; 0 4+sin(2*pi*x/epsilon)];
 elseif (Atype == 5)
-    val = (2+sin(2*pi*x/epsilon))*(4+sin(2*pi*x/epsilon))*eye(2);
+    val = (2+sin(2*pi*x/epsilon))*(4+sin(2*pi*y/epsilon))*eye(2);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
