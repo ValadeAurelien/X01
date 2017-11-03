@@ -16,11 +16,13 @@ if (Atype == 1)
 elseif (Atype == 2)
     val = [1 0; 0 2];
 elseif (Atype == 3)
-    val = [2+sin(2*pi*x/epsilon) 0 ; 0 4];
+    val = [2+2*sin(2*pi*epsilon*x) 0 ; 0 4];
 elseif (Atype == 4)
-    val = [2+sin(2*pi*x/epsilon) 0 ; 0 4+sin(2*pi*x/epsilon)];
+    val = [2+2*sin(2*pi*epsilon*x) 0 ; 0 4+sin(2*pi*epsilon*x)];
 elseif (Atype == 5)
-    val = (2+sin(2*pi*x/epsilon))*(4+sin(2*pi*y/epsilon))*eye(2);
+    val = (2*sin(2*pi*epsilon*x) + 2)*(sin(2*pi*epsilon*y) + 4)*eye(2);
+elseif (Atype == 6)
+    val =  sin(10*x)*eye(2);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

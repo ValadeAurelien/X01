@@ -32,13 +32,6 @@
 
 % MISE EN FORME
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
-\usepackage{titlesec}
-\titleformat{\section}
-{\Large\bfseries\normalfont\scshape}{}{0em}{}
-\titleformat{\subsection}
-{\large\bfseries\normalfont\scshape}{}{0em}{}
-\titleformat{\subsubsection}
-{\bfseries\normalfont\scshape}{}{0em}{}
 
 \usepackage{hyperref}
 \usepackage{xcolor}
@@ -72,7 +65,12 @@
 \newcommand{\dual}[1]{#1'}
 \newcommand{\sca}[2]{\big<#1, #2\big>}
 \newcommand{\cont}[1]{\mathcal{C}^{#1}}
-\title{Rapport TP X01 \\ TP1}
+\newcommand{\question}[2]{\paragraph{Question #1.}\textit{#2} \\}
+\newcommand{\Hd}{H^1_{\#}}
+
+
+
+\title{Rapport TP X01 \\ TP3}
 \author{Aurélien Valade}
 \date{}
 
@@ -92,43 +90,99 @@ Le but de ce TP est de résoudre le problème suivant : trouver $u \in H^1_0(\Om
 
 La structure du code ainsi que l'arrangement des dossiers ont été un peu modifiés. Tous les \texttt{*.msh} se trouvent dans le dossier \texttt{geoms/} avec un executable \texttt{bash} pour en créer à volonté.
 
-De plus, le corps de la routine principale se trouve maintenant dans \texttt{principal\_neumann\_aux.m}, cependant le fichier script est toujours bien \texttt{principal\_neumann.m}. 
+De plus, le corps de la routine principale se trouve maintenant dans \texttt{principal\_dirichlet\_aux.m}, cependant le fichier script est toujours bien \texttt{principal\_dirichlet.m}. 
 
 Un code de calcul formel rédigé en python a été ajouté. 
 
-Dans la suite, les intégrale dont le domaine n'est pas précisé portent sur tout $\Omega$.
-\section{Q1}
+\section{Solution exacte}
 
-Soit $\forall v\in H^1_0(\Omega)$.
 
-\begin{align}
-  \label{eq:var}
-  &\int_{\Omega} uv - \int_{\Omega} \nabla \big(A(x,y) \nabla u\big) v = \int_{\Omega} f v && IPP \\
-  &\int_{\Omega} uv - \int_{\partial \Omega} \big(A(x,y) \nabla u\big) v + \int_{ \Omega} A(x,y) \nabla u \nabla v  = \int_{\Omega} f v  && CL\\
-  &\int_{\Omega} uv + \int_{ \Omega} A(x,y) \nabla u \nabla v  = \int_{\Omega} f v \\
-  &a(u,v) = l(v)
-\end{align}
+\section{Solution au problème homogénéisé}
+
+\subsection{Les problèmes de cellule}
+
+\question{1}{Montrer que le problème suivant est bien posé:}
+
+Trouver $u \in V$ tel que
+\begin{equation}
+  \forall v \in V, \quad \int_Y A \nabla u \nabla v = - \int_Y A e_i \nabla v
+\end{equation}
+avec
+\begin{equation}
+  V = 
+  \left\{
+    \psi \in \Hd(Y), \quad \int_Y \psi = 0
+  \right\}
+\end{equation}
+On pose
+\begin{equation}
+  a(u,v) = \int_Y A \nabla u \nabla v, \quad
+  l(v) = \int_Y A e_i \nabla v
+\end{equation}
 
 On a bien $a(u,v)$ et $l(v)$ (bi)linéaires. Montrons que $a(u,v)$ continue 
 \begin{align}
   \label{eq:ac}
-  |a(u,v)| &\leq \left| \int A \nabla u \nabla v \right| + \left| \int u v \right| && \mbox{ineg. triang} \\
-           &\leq \beta \left| \int \nabla u \nabla v \right| + \left| \int u v \right| && \mbox{A bornée} \\
-           &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \norm{u}_{L^2}\norm{v}_{L^2} && \mbox{Cauchy Schwarz} \\
-           &\leq \beta \norm{u}_{H^1_0} \norm{v}_{H^1_0} + \norm{u}_{H^1_0}\norm{v}_{H^1_0} && \norm{\cdot}_{L^2}<\norm{\cdot}_{H^1_0} \\
-           &\leq (\beta+1) \norm{ u}_{H^1_0} \norm{ v}_{H^1_0}   \\
+  \big|a(u,v)\big| &= \left| \int_Y A \nabla u \nabla v \right| \\
+                   &\leq \norm{A\nabla u}_{L^2} \norm{\nabla v}_{L^2} && \mbox{Cauchy Schwarz} \\
+                   &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} && \mbox{A bornée} \\
+                   &\leq \beta \norm{u}_{\Hd} \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
 \end{align}
 
-On a évidement $l(v)$ continue comme $f, v \in H^1_0(\Omega)$. 
+Montrons que $l(v)$ est continue
+\begin{align}
+  \label{eq:ac}
+  \big|l(v)\big| &= \left| \int_Y A e_i \nabla v \right|  && \text{définition} \\
+                 &\leq \norm{Ae_i}_{L^2} \norm{\nabla v}_{L^2} && \text{Cauchy Schwarz} \\
+                 &\leq \beta_i \norm{\nabla v}_{L^2} && \text{$A$ bornée, donc $A e_i$ aussi} \\
+                 &\leq \eta_i \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd}
+\end{align}
 
 Montrons que $a(u,v)$ est coercive
 \begin{align}
   \label{eq:co}
-  |a(u,u)| &\geq \left|\int A (\nabla u)^2 \right| + \left|\int u^2 \right| \\
-           &\geq \max(A) \left|\int (\nabla u)^2 \right| + \left|\int u^2 \right| \\
-           &\geq \xi \left|\int (\nabla u)^2 \right| + \left|\int u^2 \right| \\
-           &\geq \min(\xi,1) \norm{u}_{H^1_0}
+  a(u,u) &= \int_Y A \nabla u  \nabla u \\
+         &\geq \xi \int_Y \nabla u^2  && \text{$A$ minorée par $\xi$}\\
+         &\geq \xi \norm{\nabla u}^2_{L^2} \\
+         &\geq \zeta \norm{u}^2_{\Hd} && \text{Pointcaré dans $V$} 
 \end{align}
+avec $\zeta = (C^2+1) \xi$, $C$ étant la constante de poincaré associée à $V$.
+
+
+\question{2}{De même pour le problème modifié}
+
+Soit $\eta>0$. Trouver $u \in V$ tel que
+\begin{equation}
+  \forall v \in V, \quad \int_Y A \nabla u \nabla v + \eta \int_Y u v = - \int_Y A e_i \nabla v
+\end{equation}
+On pose
+\begin{equation}
+  a(u,v) = \int_Y A \nabla u \nabla v + \eta \int_Y u v \quad
+  l(v) = \int_Y A e_i \nabla v
+\end{equation}
+
+On remarque que $l(v)$ reste la même que dans la question 1, il n'est donc pas nécéssaire de refaire les calculs.
+
+Montrons que $a$ est toujours continue sous cette forme :
+\begin{align}
+  \label{eq:ac}
+  \big|a(u,v)\big| &\leq \left| \int_Y A \nabla u \nabla v \right| + \eta \left| \int_Y  u v \right| && \mbox{ineg. triang} \\
+                   &\leq \norm{A\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \eta \norm{u}_{L^2} \norm{v}_{L^2} && \mbox{Cauchy Schwarz} \\
+                   &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \eta \norm{u}_{L^2} \norm{v}_{L^2} && \mbox{A bornée} \\
+                   &\leq \beta \norm{u}_{\Hd} \norm{v}_{\Hd} + \eta \norm{u}_{\Hd} \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
+                   &\leq (\beta + \eta) \norm{u}_{\Hd} \norm{v}_{\Hd}
+\end{align}
+
+Montrons maintenant que $a$ est toujours coercive
+\begin{align}
+  \label{eq:co}
+  a(u,u) &= \int_Y A \nabla u  \nabla u + \eta \int_Y u^2 \\
+         &\geq \xi \int_Y \nabla u^2 + \eta \norm{u}^2_{L^2} && \text{$A$ minorée par $\xi$.}\\
+         &\geq \xi \norm{\nabla u}^2_{L^2} + \eta \norm{u}^2_{L^2} \\
+         &\geq \min(\xi, \eta) \norm{u}^2_{\Hd}  
+\end{align} 
+
+Quand $\eta$ est assez petit, il gouverne la coercivité de $a$. Cette propriété tend à disparaitre quand $\eta$ tend vers $0$.
 
 \section{Q2}
 
@@ -234,10 +288,10 @@ il faut poser
 
 \begin{figure}
   \centering
-  \includegraphics[width=.5\textwidth]{dirichlet/L2_Acst} 
-  \includegraphics[width=.48\textwidth]{dirichlet/H1_Acst} \\
-  \includegraphics[width=.48\textwidth]{dirichlet/L2_Avar} 
-  \includegraphics[width=.48\textwidth]{dirichlet/H1_Avar}
+  % \includegraphics[width=.5\textwidth]{dirichlet/L2_Acst} 
+  % \includegraphics[width=.48\textwidth]{dirichlet/H1_Acst} \\
+  % \includegraphics[width=.48\textwidth]{dirichlet/L2_Avar} 
+  % \includegraphics[width=.48\textwidth]{dirichlet/H1_Avar}
   \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 pour un problème de dirichlet avec A constante (haut), A variable (bas).}
   \label{fig:acst}
 \end{figure}
@@ -312,12 +366,12 @@ il faut poser
 
 \begin{figure}
   \centering
-  \includegraphics[width=.48\textwidth]{periodique/L2_Acst}
-  \hfill
-  \includegraphics[width=.48\textwidth]{periodique/H1_Acst} \\
-  \includegraphics[width=.48\textwidth]{periodique/L2_Avar}
-  \hfill
-  \includegraphics[width=.48\textwidth]{periodique/H1_Avar}
+  % \includegraphics[width=.48\textwidth]{periodique/L2_Acst}
+  % \hfill
+  % \includegraphics[width=.48\textwidth]{periodique/H1_Acst} \\
+  % \includegraphics[width=.48\textwidth]{periodique/L2_Avar}
+  % \hfill
+  % \includegraphics[width=.48\textwidth]{periodique/H1_Avar}
   \caption{Erreur normalisée pour la norme L2 et erreur normalisée pour la norme H1 pour un problème périodique avec A constante (haut), A variable (bas)}
   \label{fig:avar}
 \end{figure}
