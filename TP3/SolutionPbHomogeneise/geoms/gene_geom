@@ -1,0 +1,28 @@
+#! /bin/sh
+
+nb=20
+for i in $(seq 1 $nb) 
+do 
+    f=geomCarre$i.geo; 
+    cp geomCarre0.geo geomCarre$i.geo; 
+    h=$(calc "10**(-$i/10)");
+    sed -i "s/h = ;/h = $h;/g" geomCarre$i.geo; 
+    gmsh $f -2 -v 0;
+done
+
+printf "{"
+for i in $(seq 1 $nb); 
+do
+    printf "\'%s\', " "geoms/geomCarre$i.msh";
+done
+printf "}"
+
+echo 
+printf "["
+for i in $(seq 1 $nb); 
+do
+    printf "%s, " $(calc "10**(-$i/10)")
+done
+printf "]"
+
+

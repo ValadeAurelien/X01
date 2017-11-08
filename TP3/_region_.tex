@@ -1,0 +1,248 @@
+\message{ !name(rapport.tex)}\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+
+% MATH
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+%\newtheorem{cusdef}{Def}
+%\newtheorem{custhm}{Thm}
+%\newtheorem{cuscor}{Cor}
+%\newtheorem{cusrk}{Rk}
+\newenvironment{cusenv}[2]
+{\begin{samepage}\noindent\textbf{#1} -- (#2) \par}
+{\end{samepage} \bigskip}
+
+\newenvironment{cusdef}[1]
+{\begin{cusenv}{Def}{#1}}{\end{cusenv}}
+
+\newenvironment{custhm}[1]
+{\begin{cusenv}{Thm}{#1}}{\end{cusenv}}
+
+\newenvironment{cuscor}[1]
+{\begin{cusenv}{Cor}{#1}}{\end{cusenv}}
+
+\newenvironment{cusprop}[1]
+{\begin{cusenv}{Prop}{#1}}{\end{cusenv}}
+
+\newenvironment{cusrk}[1]
+{\begin{cusenv}{Rk}{#1}}{\end{cusenv}}	
+
+% MISE EN FORME
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
+
+
+% MACROS
+\usepackage{xparse}
+\newcommand{\smbox}[1]{\mbox{\footnotesize #1}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\Am}{\mathbb{A}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\M}{\mathbb{M}}
+\newcommand{\topo}{\mathcal{T}}
+\newcommand{\Lin}{\mathcal{L}}
+\newcommand{\Int}{\mbox{Int}\,}
+\newcommand{\st}{~\mbox{s.t.}~}
+\newcommand{\miff}{~\mbox{iff}~}
+\newcommand{\ie}{\emph{i.e.} }
+\newcommand{\ms}{~~~}
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\dual}[1]{#1'}
+\newcommand{\sca}[2]{\big<#1, #2\big>}
+\newcommand{\cont}[1]{\mathcal{C}^{#1}}
+\newcommand{\question}[2]{\paragraph{Question #1.}\textit{#2} \\}
+\newcommand{\Hd}{H^1_{\#}}
+
+
+
+\title{Rapport TP X01 \\ TP3}
+\author{Aurélien Valade}
+\date{}
+
+\begin{document}
+
+\message{ !name(rapport.tex) !offset(20) }
+\section{Solution au problème homogénéisé}
+
+\subsection{Les problèmes de cellule}
+
+\question{1}{Montrer que le problème suivant est bien posé:}
+
+Trouver $u \in V$ tel que
+\begin{equation}
+  \label{eq:pbcell}
+  \forall v \in V, \quad \int_Y A \nabla u \nabla v = - \int_Y A e_i \nabla v
+\end{equation}
+avec
+\begin{equation}
+  V = 
+  \left\{
+    \psi \in \Hd(Y), \quad \int_Y \psi = 0
+  \right\}
+\end{equation}
+On pose
+\begin{equation}
+  a(u,v) = \int_Y A \nabla u \nabla v, \quad
+  l(v) = -\int_Y A e_i \nabla v
+\end{equation}
+
+On a bien $a(u,v)$ et $l(v)$ (bi)linéaires. Montrons que $a(u,v)$ continue 
+\begin{align}
+  \label{eq:ac}
+  \big|a(u,v)\big| &= \left| \int_Y A \nabla u \nabla v \right| \\
+                   &\leq \norm{A\nabla u}_{L^2} \norm{\nabla v}_{L^2} && \mbox{Cauchy Schwarz} \\
+                   &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} && \mbox{A bornée} \\
+                   &\leq \beta \norm{u}_{\Hd} \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
+\end{align}
+
+Montrons que $l(v)$ est continue
+\begin{align}
+  \label{eq:ac}
+  \big|l(v)\big| &= \left| \int_Y A e_i \nabla v \right|  && \text{définition} \\
+                 &\leq \norm{Ae_i}_{L^2} \norm{\nabla v}_{L^2} && \text{Cauchy Schwarz} \\
+                 &\leq \beta_i \norm{\nabla v}_{L^2} && \text{$A$ bornée, donc $A e_i$ aussi} \\
+                 &\leq \eta_i \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd}
+\end{align}
+
+Montrons que $a(u,v)$ est coercive
+\begin{align}
+  \label{eq:co}
+  a(u,u) &= \int_Y A \nabla u  \nabla u \\
+         &\geq \xi \int_Y \nabla u^2  && \text{$A$ minorée par $\xi$}\\
+         &\geq \xi \norm{\nabla u}^2_{L^2} \\
+         &\geq \zeta \norm{u}^2_{\Hd} && \text{Pointcaré dans $V$} 
+\end{align}
+avec $\zeta = \frac{\xi}{(C^2+1)}$, $C$ étant la constante de poincaré associée à $V$.
+
+
+\question{2}{De même pour le problème modifié}
+
+Soit $\eta>0$. Trouver $u \in V$ tel que
+\begin{equation}
+  \label{eq:pbcelleta}
+  \forall v \in V, \quad \int_Y A \nabla u \nabla v + \eta \int_Y u v = - \int_Y A e_i \nabla v
+\end{equation}
+On pose
+\begin{equation}
+  a(u,v) = \int_Y A \nabla u \nabla v + \eta \int_Y u v \quad
+  l(v) = -\int_Y A e_i \nabla v
+\end{equation}
+
+On remarque que $l(v)$ reste la même que dans la question 1, il n'est donc pas nécéssaire de refaire les calculs.
+
+Montrons que $a$ est toujours continue sous cette forme :
+\begin{align}
+  \label{eq:ac}
+  \big|a(u,v)\big| &\leq \left| \int_Y A \nabla u \nabla v \right| + \eta \left| \int_Y  u v \right| && \mbox{ineg. triang} \\
+                   &\leq \norm{A\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \eta \norm{u}_{L^2} \norm{v}_{L^2} && \mbox{Cauchy Schwarz} \\
+                   &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \eta \norm{u}_{L^2} \norm{v}_{L^2} && \mbox{A bornée} \\
+                   &\leq \beta \norm{u}_{\Hd} \norm{v}_{\Hd} + \eta \norm{u}_{\Hd} \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
+                   &\leq (\beta + \eta) \norm{u}_{\Hd} \norm{v}_{\Hd}
+\end{align}
+
+Montrons maintenant que $a$ est toujours coercive
+\begin{align}
+  \label{eq:co}
+  a(u,u) &= \int_Y A \nabla u  \nabla u + \eta \int_Y u^2 \\
+         &\geq \xi \int_Y \nabla u^2 + \eta \norm{u}^2_{L^2} && \text{$A$ minorée par $\xi$.}\\
+         &\geq \xi \norm{\nabla u}^2_{L^2} + \eta \norm{u}^2_{L^2} \\
+         &\geq \zeta \norm{u}^2_{\Hd} + \eta \norm{ u}^2_{L^2} && \text{Poincaré dans }V\\
+    \big(&\geq \zeta  \norm{u}^2_{\Hd}\big)
+\end{align} 
+avec $\zeta = \frac{\xi}{(C^2+1)}$. Quand $\eta$ tend vers zéro on retrouve le resultat de la question 1. En considérant $V = \text{Vect}\big(\{\omega_I\}_{1,N})$, la matrice élements finis $\Am^{\eta}$ qu'on écrit donc
+\begin{equation}
+  \Am^{\eta} = \K + \eta \M 
+\end{equation}
+avec
+\begin{align}
+  &\K \in \R^{N\times N},\quad \K_{IJ} = \int A \nabla \omega_I \nabla \omega_J,  \\
+  &\M \in \R^{N\times N},\quad \M_{IJ} = \int \omega_I \omega_J,
+\end{align}
+tend vers la matrice $\K$ quand $\eta$ tend vers $0$ avec une vitesse \emph{a priori} proportionelle à $\eta$.
+
+\question{3}{Montrer que $\quad\forall i \in \{1,2\}, \exists C>0 ~tq~ \norm{\omega_i-\omega_i^\eta}_{H^1} < C \eta$.}
+En sommant \autoref{eq:pbcell} et \autoref{eq:pbcelleta}, on a
+\begin{equation}
+  \int_Y A \nabla \big(\omega_i-\omega_i^\eta\big) \nabla \phi = \eta \int_Y \omega_i^\eta \phi
+\end{equation}
+or $\omega_i-\omega_i^\eta\in\Hd$, donc on peut choisir $\phi=\omega_i-\omega_i^\eta$ :
+\begin{align}
+  \int_Y A \big(\nabla \big(\omega_i-\omega_i^\eta\big)\big)^2 &= \eta \int_Y \omega_i^\eta \big(\omega_i-\omega_i^\eta\big) \\
+  \left| \int_Y A \nabla \big(\omega_i-\omega_i^\eta\big) \nabla \big(\omega_i-\omega_i^\eta\big) \right| &= \left| \eta \int_Y \omega_i^\eta \big(\omega_i-\omega_i^\eta\big) \right| && \text{valeur absolue} \\
+  \xi \norm{\nabla \big(\omega_i-\omega_i^\eta \big)}_{L^2}^2 &\leq \eta \norm{\omega_i^\eta}_{L^2} \norm{\big(\omega_i-\omega_i^\eta \big)}_{L^2} && \text{Cauchy-Schwarz et } \norm{Au}\geq\xi \norm{u} \\
+  \xi (D^2+1) \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1}^2 &\leq \norm{\omega_i^\eta}_{H^1}\eta \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1} && \text{Poincaré et }\norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
+  \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1} &\leq \eta \frac{\norm{\omega_i^\eta}_{H^1}}{\xi (D^2+1)}
+\end{align}
+
+Si on borne $\eta$ par le haut, c'est à dire qu'on travaille sur un interval fini $I_\eta \subset  \R$, comme le problème est bien posé pour tous ces $\eta$, on pose
+\begin{equation}
+  \gamma = \sup_{\eta\in I_\eta}\norm{\omega_i^\eta}_{H^1}
+\end{equation}
+et on récupère 
+\begin{equation}
+  \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1} \leq C \eta 
+\end{equation}
+avec $C = \frac{\gamma}{\xi (D^2+1)}$.
+
+
+\subsection{Première validation}
+
+\question{7}{Trouver une soluation exacte à \autoref{eq:pbcell} avec $A=Id$.}
+On a directement que
+\begin{equation}
+  \int_Y \big(\nabla \omega_i-e_i\big) \nabla \phi = 0 \quad \forall \phi \in V, \forall i \in \{1,2\}
+\end{equation}
+or ces fonctions étant suffisamment continues, cela implique que
+\begin{equation}
+  \nabla \omega_i+e_i = 0 \quad \forall i \in \{1,2\}.
+\end{equation}
+Pour $i=1$,
+\begin{align}
+  \begin{cases}
+    \partial_{y_1} \omega_1 = -1 \\
+    \partial_{y_2} \omega_1 = 0
+  \end{cases} \iff
+  \begin{cases}
+    \omega_1 = - y_1 + C(y_2) \\
+    \partial_{y_2} \omega_1 = 0 
+  \end{cases} \iff
+  \begin{cases}
+    \omega_1 = - y_1 + C(y_2) \\
+    \partial_{y_2} C(y_2) = 0 
+  \end{cases} \iff
+  \begin{cases}
+    \omega_1 = - y_1 + C \\
+    C \text{ constante}
+  \end{cases}
+\end{align}
+de plus on impose que l'intégrale soit nulle sur $[0,1]$, d'ou $C=1/2$. De même pour $i=2$. On a donc
+\begin{equation}
+  \omega_i = - y_i + \tfrac{1}{2} \quad \forall i \in \{1,2\}.
+\end{equation}
+
+\question{8}{De même pour \[ A = \]}
+
+\message{ !name(rapport.tex) !offset(17) }
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
