@@ -1,4 +1,4 @@
-function val = f(x, y, Atype, epsilon, i)
+function val = f(x, y)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % f :
 % Evaluation de la fonction second membre.
@@ -11,9 +11,8 @@ function val = f(x, y, Atype, epsilon, i)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %A COMPLETER
-%val = ones(size(x));
-Aval = A(x, y, Atype, epsilon);
-val = -A(:,i);
+val = 1+sin(4*pi*x).*sin(2*pi*y); %ones(size(x));
+
 % $$$ if (Atype == 1)
 % $$$     val = 2*pi^2*sin(pi*x).*sin(pi*y);
 % $$$ elseif (Atype == 2)

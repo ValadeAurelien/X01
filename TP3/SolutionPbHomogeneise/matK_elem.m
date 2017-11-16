@@ -1,5 +1,4 @@
-
-function [Kel] = matK_elem(S1, S2, S3, Atype, epsilon)
+function [Kel] = matK_elem(S1, S2, S3, Ah, Atype, epsilon)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % mat_elem :
 % calcul la matrices de raideur elementaire en P1 lagrange
@@ -36,32 +35,30 @@ if (abs(D) <= eps)
     error('l aire d un triangle est nulle!!!'); 
 end;
 
-% Transfo depuis le triangle unité
-F_l = @(x,y) [(x2-x1)*x + (x3-x1)*y + x1 , ...
-              (y2-y1)*x + (y3-y1)*y + y1];
-% ... Et son jacobien
-J_F = [ x2-x1 , x3-x1 ; ...
-        y2-y1 , y3-y1];
-Jt_inv = inv(J_F');
-det_J = det(J_F);
+% Transformation F_l du triangle de reference vers le triangle physique
+F_l = @(xref,yref) [(x2-x1)*xref + (x3-x1)*yref + x1 , (y2-y1)*xref + (y3-y1)*yref + y1];
+% Jacobienne de F_l
+Jacobian = [ x2-x1 , x3-x1 ; y2-y1 , y3-y1];
 
+% coordonees des points pour la quadrature sur le triangle physique
+X1q = F_l(1/3,1/3);
+X2q = F_l(1/5,1/5);
+X3q = F_l(1/5,3/5);
+X4q = F_l(3/5,1/5);
 % Poids et points
 w1 = -9/32; w234 = 25/96;
 
-X1 = F_l(1/3,1/3);
-X2 = F_l(1/5,1/5);
-X3 = F_l(1/5,3/5);
-X4 = F_l(3/5,1/5);
-
 % Integrale de A
-Aq = w1  * A(X1(1), X1(2), Atype, epsilon) + ...
-     w234*(A(X2(1), X2(2), Atype, epsilon) + ...
-           A(X3(1), X3(2), Atype, epsilon) + ...
-           A(X4(1), X4(2), Atype, epsilon));
+if (epsilon>0)
+    A_quad = w1*   A(X1q(1), X1q(2), Atype, 1) + ...
+             w234*(A(X2q(1), X2q(2), Atype, 1) + ...
+                   A(X3q(1), X3q(2), Atype, 1) + ...
+                   A(X4q(1), X4q(2), Atype, 1));
+else
+    A_quad = Ah/2;
+end
 norm_ref = zeros(3, 2);
-norm_ref(1, :) = [-1, -1];
-norm_ref(2, :) = [1, 0];
-norm_ref(3, :) = [0, 1];
+norm_ref = [-1,-1;1,0;0,1];
 
 % $$$ Aval = A((x1+x2+x3)/3, (y1+y2+y3)/3, Atype, epsilon)/2;
 % $$$ disp(sprintf('%f %f %f %f\n%f %f %f %f\n\n', ...
@@ -72,12 +69,11 @@ norm_ref(3, :) = [0, 1];
 % -------------------------------
 Kel = zeros(3,3);
 for i=1:3
-    for j=1:3
-	% A COMPLETER
-        Kel(i,j) = ( (Aq*Jt_inv*(norm_ref(i,:))')' * (Jt_inv*norm_ref(j,:)') ) * ...
-            abs(det_J);
-    end; % j
-end; 
+  for j=1:3
+    Kel(i,j) = (     (  A_quad*inv(Jacobian')*(norm_ref(i,:))'  )' * (inv(Jacobian')*norm_ref(j,:)') ) * abs(det(Jacobian));
+  end; % j
+end; % i
+
 % i
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                        fin de la routine

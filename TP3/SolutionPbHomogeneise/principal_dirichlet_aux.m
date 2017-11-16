@@ -1,5 +1,4 @@
 function [UU, MM, KK] = principal_dirichlet_aux(h, namemsh, namemsh_pbcell, ...
-                                                visualisation, validation, ...
                                                 Atype, epsilon, eta)
 % =====================================================
 %
@@ -28,7 +27,11 @@ KK = sparse(Nbpt,Nbpt); % matrice de rigidite
 MM = sparse(Nbpt,Nbpt); % matrice de rigidite
 LL = zeros(Nbpt,1);     % vecteur second membre
 
-Ah = calc_A_homo(namemsh, Atype, eta)
+if epsilon<=0
+    Ah = calc_A_homo(namemsh_pbcell, Atype, eta);
+else 
+    Ah = eye(2); % on s'en fout...
+end
 % boucle sur les triangles
 % ------------------------
 for l=1:Nbtri
@@ -39,9 +42,9 @@ for l=1:Nbtri
     S3=Coorneu(Numtri(l, 3), :);
     % calcul des matrices elementaires du triangle l 
     
-    Kel=matK_elem(S1, S2, S3, Ah);
+    Kel=matK_elem(S1, S2, S3, Ah, Atype, epsilon);
     Mel=matM_elem(S1, S2, S3);
-    % On fait l'assemmblage de la matrice globale et du second membre
+    % On fait l'assemblage de la matrice globale et du second membre
     % A COMPLETER
     for i=1:3
         I = Numtri(l, i);
@@ -57,7 +60,7 @@ end % for l
 % -------------------------
 % A COMPLETER
 % utiliser la routine f.m
-FF = f(Coorneu(:,1), Coorneu(:,2), Atype, epsilon);
+FF = f(Coorneu(:,1), Coorneu(:,2));
 LL = MM*FF;
 AA = KK;
 
@@ -72,32 +75,7 @@ UU0 = AA0\LL0;
 % Expression de la solution dans toute la base
 % ———————
 UU = PP'*UU0;
-% $$$ UU_exact = sin(pi*Coorneu(:,1)).*sin(pi*Coorneu(:,2));
-% $$$ 
-% $$$ AA_exact = zeros(Nbpt, 1);
-% $$$ for i=1:Nbpt
-% $$$     Amat = A(Coorneu(i,1), Coorneu(i,2), Atype, epsilon);
-% $$$     AA_exact(i) = Amat(1);
-% $$$ end
 
-% visualisation
-% -------------
-if (visualisation>0)
-% $$$     affiche(abs(UU-UU_exact), Numtri, Coorneu, sprintf(['Dirichlet ' ...
-% $$$                         'diff - %s, eta : %f'], namemsh, eta));
-    if (visualisation>1)
-        affiche(UU, Numtri, Coorneu, sprintf(['Dirichlet UU - %s, ' ...
-                            'eta : %f'], namemsh, eta));           
-% $$$         affiche(UU_exact, Numtri, Coorneu, sprintf(['Dirichlet ' ...
-% $$$                             'UU exact - %s, eta : %f'], namemsh, eta));
-% $$$         if (visualisation>2)
-% $$$             affiche(AA_exact, Numtri, Coorneu, sprintf(['Dirichlet ' ...
-% $$$                                 'AA - %s, eta : %f'], namemsh, eta));           
-% $$$             affiche(FF, Numtri, Coorneu, sprintf(['Dirichlet FF - ' ...
-% $$$                                 '%s, eta : %f'], namemsh, eta));
-% $$$         end
-    end
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                        fin de la routine
