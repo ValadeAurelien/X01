@@ -1,4 +1,4 @@
-function [Kel] = matK_elem(S1, S2, S3)
+function [Kel] = matK_elem_pbcell(S1, S2, S3, Atype)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % mat_elem :
 % calcul la matrices de raideur elementaire en P1 lagrange
@@ -44,11 +44,10 @@ X3 = F_l(1/5,3/5);
 X4 = F_l(3/5,1/5);
 
 % Integrale de A
-Aq = w1 * Ah + 3 * w234 * Ah; %A constante
-%Aq = w1*   A(X1(1), X1(2), Atype) + ...
-%     w234*(A(X2(1), X2(2), Atype) + ...
-%           A(X3(1), X3(2), Atype) + ...
-%           A(X4(1), X4(2), Atype));
+Aq = w1*   A(X1(1), X1(2), Atype) + ...
+     w234*(A(X2(1), X2(2), Atype) + ...
+           A(X3(1), X3(2), Atype) + ...
+           A(X4(1), X4(2), Atype));
 
 norm_ref = zeros(3, 2);
 norm_ref(1, :) = [-1, -1];

@@ -13,7 +13,7 @@ function val = f(x, y, Atype, epsilon, i)
 %A COMPLETER
 %val = ones(size(x));
 Aval = A(x, y, Atype, epsilon);
-val = A(:,i);
+val = -A(:,i);
 % $$$ if (Atype == 1)
 % $$$     val = 2*pi^2*sin(pi*x).*sin(pi*y);
 % $$$ elseif (Atype == 2)

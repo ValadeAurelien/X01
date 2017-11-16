@@ -1,5 +1,6 @@
-function [UU, MM, KK] = principal_dirichlet_aux(h, namemsh, visualisation, validation, ...
-                            Atype, epsilon, eta)
+function [UU, MM, KK] = principal_dirichlet_aux(h, namemsh, namemsh_pbcell, ...
+                                                visualisation, validation, ...
+                                                Atype, epsilon, eta)
 % =====================================================
 %
 %
@@ -27,6 +28,7 @@ KK = sparse(Nbpt,Nbpt); % matrice de rigidite
 MM = sparse(Nbpt,Nbpt); % matrice de rigidite
 LL = zeros(Nbpt,1);     % vecteur second membre
 
+Ah = calc_A_homo(namemsh, Atype, eta)
 % boucle sur les triangles
 % ------------------------
 for l=1:Nbtri
@@ -37,7 +39,7 @@ for l=1:Nbtri
     S3=Coorneu(Numtri(l, 3), :);
     % calcul des matrices elementaires du triangle l 
     
-    Kel=matK_elem(S1, S2, S3, Atype, epsilon);
+    Kel=matK_elem(S1, S2, S3, Ah);
     Mel=matM_elem(S1, S2, S3);
     % On fait l'assemmblage de la matrice globale et du second membre
     % A COMPLETER
@@ -51,15 +53,13 @@ for l=1:Nbtri
     end     
 end % for l
 
-
-    
 % Calcul du second membre L
 % -------------------------
 % A COMPLETER
 % utiliser la routine f.m
 FF = f(Coorneu(:,1), Coorneu(:,2), Atype, epsilon);
 LL = MM*FF;
-AA = KK+eta*MM;
+AA = KK;
 
 PP = horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes));
 AA0 = PP*AA*PP';
@@ -87,7 +87,7 @@ if (visualisation>0)
 % $$$                         'diff - %s, eta : %f'], namemsh, eta));
     if (visualisation>1)
         affiche(UU, Numtri, Coorneu, sprintf(['Dirichlet UU - %s, ' ...
-% $$$                             'eta : %f'], namemsh, eta));           
+                            'eta : %f'], namemsh, eta));           
 % $$$         affiche(UU_exact, Numtri, Coorneu, sprintf(['Dirichlet ' ...
 % $$$                             'UU exact - %s, eta : %f'], namemsh, eta));
 % $$$         if (visualisation>2)
