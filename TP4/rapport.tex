@@ -1,0 +1,393 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+
+% MATH
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+\newtheorem{pb}{Problème}
+\newtheorem{rmq}{Remarque}
+
+% MISE EN FORME
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
+
+
+% MACROS
+\usepackage{xparse}
+\newcommand{\smbox}[1]{\mbox{\footnotesize #1}}
+\newcommand{\Am}{\mathbb{A}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\M}{\mathbb{M}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\Ah}{A^{hom}}
+\newcommand{\uh}{u^{hom}}
+\newcommand{\bx}{\bar{x}}
+\newcommand{\teta}{\tilde{\eta}}
+\newcommand{\tphi}{\tilde{\phi}}
+\newcommand{\Ye}{Y_\varepsilon}
+\newcommand{\tw}{\tilde{w}}
+\newcommand{\Ae}{A^\varepsilon}
+\newcommand{\Be}{B^\varepsilon}
+\newcommand{\ue}{u^\varepsilon}
+\newcommand{\ie}{\emph{i.e.{}}~}
+\newcommand{\st}{\text{~~s.t.~~}}
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\sca}[2]{\big<#1, #2\big>}
+\newcommand{\cont}[1]{\mathcal{C}^{#1}}
+\newcommand{\question}[2]{\paragraph{Question #1.}\textit{#2} \\}
+\newcommand{\Hd}{H^1_{\#}}
+\newcommand{\td}{\text{d}}
+
+
+\title{Rapport TP X01 \\ TP4}
+\author{Aurélien Valade}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Dans ce rapport, nous allons nous pencher sur la description et l'implémentation d'un code de résolutions d'équations aux dérivées partielles par méthode
+d'éléments finis et résolution hétérogène multi-échelles, termes que nous détaillerons plus loin. Ce travaille se présente en deux parties : tout d'abord
+en une analyse du papier de \cite{abdulle2009short}, puis une tentative de ré-implémentation de certaines parties de ce code à l'aide des routines développées
+dans les TP précédents. 
+
+\section{Analyse du papier}
+
+Ce papier a pour but l'implémentation d'un code MATLAB simple et multifonctions à mettre à disposition du publique. Celui ci permettrait la résolution
+d'EDP dont la physique amène à considérer des phénomènes physiques couplés sur plusieurs échelles d'espaces distinctes. Pour la résolution de tels
+problèmes, une approche frontale serait donc de discrétiser tout l'espace avec un maillage dont les cellules seraient à l'échelle du phénomène physique le
+plus petit, mais cela amènerait à d'énormes problèmes numériques très coûteux à résoudre. Parfois la physique demande même à ce que la taille du phénomène
+microscopique tende vers zéro, il est alors impossible d'attaquer le problème brutallement et il faut donc créer un meilleur cadre analytique et trouver
+des méthodes numériques plus efficaces quitte à faire des approximations.
+
+La littérature semble être fournie en ce qui concerne l'approche analytique de ce genre de problème multi-échelles, cependant peu d'outils numériques
+semblent être disponibles aujourd'hui, ce à quoi le travail présenté dans ce papier veut rémédier. 
+
+\subsection{Cadre mathématique de la résolution}
+
+\subsubsection{Présentation de l'équation}
+
+L'étude présentée dans ce papier porte sur des méthodes d'éléments finis (FE) pour la résolution de problèmes elliptiques et paraboliques comme suit.
+
+\begin{pb}
+  \label{pb:parael}
+  Soient les sous espaces $\Omega \subset \R^d$\quad et \quad $Y = [0,1]^d$. Soient $\varepsilon >0$, $\alpha\in \{0, 1\}$ et soient les fonctions sur ces
+  espaces $f : \Omega \to \R, \quad \Ae : \Omega\times Y \to \mathcal{M}_d(\R)$  telle que $\Ae  = (\Ae)^T$ \quad et \quad $g_{N,D} : \partial \Omega_{N, D} \to \R$. \\
+  Trouver $u$ tel que
+  \begin{equation*}
+    \begin{cases}
+      \alpha \partial_t \ue -\nabla(\Ae \nabla \ue) = f & \text{sur }\Omega\\
+      \ue = g_D & \text{sur }\partial \Omega_D \\
+      n\cdot(\Ae \nabla \ue) = g_N & \text{sur }\partial \Omega_N
+    \end{cases}
+  \end{equation*}
+\end{pb}
+
+\begin{rmq}
+  Il s'agit d'un problème elliptique si $\alpha=0$, sinon il s'agit d'un problème parabolique.
+\end{rmq}
+
+\begin{rmq}
+  La dépendance en $\varepsilon$ de $\Ae$ n'est pas forcément de la forme vue en cours $\Ae(x, x/\varepsilon)$ mais peut être plus complexe voire
+  implicite, bien qu'on ne considère dans la suite que ce cas simple. Il est cependant nécessaire d'avoir pour tout $\varepsilon$ les propriétés suivantes :
+  \[
+    \exists \lambda, \Lambda > 0 \st \lambda \xi^2 < (\Ae \xi) \cdot \xi < \Lambda \xi^2 \quad \forall \xi \in \R^d
+  \]
+  en tous points pour pouvoir prouver que le problème variationnel vu en \autoref{sec:pbvar} est bien posé.
+\end{rmq}
+
+Cette formulation permet de mettre en exergue la dépendance en $\varepsilon$ qui est l'échelle la plus petite du problème, et qui tend usuellement vers
+zéro. C'est cette dépendance qui est au centre du questionnement. En effet il ne suffit pas de trouver une solution $\ue$ explicite en $\varepsilon$ et de
+faire tendre $\varepsilon$ vers zéro pour trouver $u^0$. La convergence n'est généralement que faible dans $L^2$ :
+\[
+  \lim_{\varepsilon \to 0} \int_\Omega \ue \phi = \int_\Omega u^0 \phi \qquad \forall \phi \in L^2(\Omega).
+\]
+
+Les deux méthodes présentées plus loin permettent de palier à ce problème par des méthodes analytiques amenant à des implémentations numériques modifiées.
+
+
+\subsubsection{Problème variationnel associé}
+\label{sec:pbvar}
+
+On va poser ici la formulation variationnelle discrète du problème pour mieux voir les éléments qui nous intéressent réellement, à savoir les coefficients
+de la matrice de rigidité.
+
+Par une démonstration vue plusieure fois en cours dans un cadre plus restreint\footnote{Multiliplication par $\phi$,
+  Green-Ostrogradski deux fois dont la deuxième pour changer l'intégrale sur $g_D$.}, on obtient que le problème \ref{pb:parael} est équivalent à
+\begin{equation}
+  \underbrace{\int_\Omega (\Ae \nabla \ue)\cdot \nabla \phi}_{\Be(\ue, \phi)} =
+  \underbrace{\int_\Omega f \phi + \int_{\partial \Omega_N} g_N \phi - \int_{\Omega} (\Ae \nabla g_D)\cdot \nabla \phi}_{l^{\varepsilon}(\phi)}
+  \qquad \forall \phi \in L^2(\Omega).
+\end{equation}
+
+\begin{rmq}
+  On peut réécrire immédiatement
+  \[
+    l^{\varepsilon}(\phi) = l(\phi) - \Be(g_D, \phi)
+  \]
+\end{rmq}
+
+Sous certaines conditions de coercivité et de continuité des fonctions (bi)linéaires en présence, on peut montrer que le problème est bien posé à l'aide
+du théorème de Lax-Milgram.
+
+Il apparaît que le point centrale de la difficulté de cette équation est dans la fonction bilinéaire $\Be$. Ce sont en effet ces coefficients que l'on
+cherchera à calculer par la méthode la plus adaptée pour quand $\varepsilon$ tend vers 0.
+
+Avant cela, discrétisons cette équation sur une base finie de fonctions de $L^2(\Omega)$. On se donne un maillage de simplex en deux
+dimensions\footnote{Le papier sus-mentionné va plus loin en considérant d'autres types de maillages, en 2D et en 3D.}. On note les sommets de ce maillage
+les $\{S_i\}_{1, N}$ et $\T_h$ l'ensemble des simplex. On définit l'ensemble des sommets les fonctions de $\R^g[X]$ avec $g\in\N$ le degré des polynômes
+choisi. Ces fonctions, notées $\{\varphi_i\}_{1, N}$ par la suite sont telles que
+\[
+  \varphi_i(S_j) = \delta_{i,j} \quad \forall i, j \in [1, N]^2.
+\]
+On projette $\ue$ sur cette bases et on utilise les $\{\varphi_i\}_{1, N}$ comme $\phi$ pour obtenir le système linéaire 
+\[
+  \K^\varepsilon U^\varepsilon = L^\varepsilon
+\]
+avec $\K^\varepsilon_{ij} = \Be(\varphi_i, \varphi_j), ~ U^\varepsilon_i = \ue(S_i)$ et $L^\varepsilon_i = l^\varepsilon(\varphi_i)$.
+
+
+\subsection{Méthode d'homogénéisation classique}
+  
+Le concept développé en homogénéisation pure est de trouver un méthode pour calculer le tenseur $\Ah$ en tout point pour pouvoir ensuite résoudre le
+problème dérivé qui nous donne la solution $\uh=\lim_{\varepsilon\to 0}\ue$:
+\begin{pb}
+  Trouver $\uh$ tel que
+  \begin{equation*}
+    \alpha \partial_t \uh -\nabla(\Ah \nabla \uh) = f
+  \end{equation*}
+\end{pb}
+
+
+L'avantage est ici que $\varepsilon$ a complétement disparu de l'équation et donc qu'un
+maillage adapté aux grandes échelles seules suffit. Cependant il faut pour cela calculer $\Ah(\bx)$ au préalable \ie avant la résolution du macro
+problème. Pour cela on résout les problèmes dits de cellule en tout point $\bx \in \Omega$ pour trouver les $\{w_i\}_{1, d}$ : 
+\begin{equation}
+  \int_Y A^1(\bx, y) \nabla w_i(\bx, y) \nabla \phi(y) \td y  = \int_Y A^1(\bx, y) e_i \nabla \phi(y) \td y
+  \quad  \forall\phi\in L^2(\Omega) \qquad \forall i \in \{1, d\} 
+\end{equation}
+puis on calcule le tenseur homogénéisé
+\begin{equation}
+  \label{eq:Ahom}
+  \Ah_{jk}(\bx) = \int_Y A(\bx, y)\big(e_k+\nabla_y w_k(\bx, y)\big)\big(e_j+\nabla_y w_j(\bx, y)\big) \td y 
+\end{equation}
+et on peut finalement résoudre le système linéaire homogénéisé :
+\[
+  \K U = L
+\]
+avec $\K_{ij} = \int_\Omega (\Ah \varphi_i)\cdot \varphi_j, ~ U_i = \uh(S_i)$ et $L_i = l(\varphi_i) - \int_\Omega (\Ah g_D)\cdot \varphi_i$.
+
+Le gros inconvénient de cette méthode étant qui faut préalablement calculer le tenseur homogénéisé $\Ah$ et ce théoriquement en tout point de $\Omega$, ou
+bien au moins en un certain nombre de points assez élevés pour faire une quadrature.
+
+\subsection{Différences et apport de la nouvelle méthode}
+
+\question{1}{Mq \autoref{eq:Ahom} peut se réécrire sous la forme de \autoref{eq:AhomYeps}}
+
+\begin{equation}
+  \label{eq:AhomYeps}
+  \Ah_{jk}(\bx) = \frac{1}{|\Ye|}
+  \int_{\Ye} A(\bx, x/\varepsilon) \big(e_k+\nabla_x \eta_k(\bx, x/\varepsilon)\big)\big(e_j+\nabla_x \eta_j(\bx, x/\varepsilon)\big) dx
+\end{equation}
+avec 
+\[
+  \eta_i = \varepsilon w_i \qquad \forall i \in \{1,2\}
+\]
+
+On procède par changement de variable : $ y \rightarrow x/\varepsilon $ et en faisant les transformations suivantes
+\begin{itemize}
+\item $dy \rightarrow dx/\varepsilon = dx/|\Ye|$,
+\item $y=(-1/2, -1/2) \rightarrow x=(-\varepsilon/2, -\varepsilon/2) \implies Y \rightarrow \Ye = (-\varepsilon/2, -\varepsilon/2)^2$,
+\item $\nabla_y = \frac{\partial}{\partial y} = \frac{\partial x}{\partial y}\frac{\partial}{\partial x} = \varepsilon \nabla_x $,
+\end{itemize}
+la réécriture est immédiate.
+
+\question{2}{Second changement de variable}
+Après second changement de variable $x\rightarrow x +\bx$ on travaille avec les nouvelles fonctions $\teta_i = \varepsilon w_i(\bx, (x-\bx)/\varepsilon)$.
+On voudrait montrer que ces nouvelles fonctions résolvent le problème \autoref{eq:pbcelleta}
+
+\begin{equation}
+  \label{eq:pbcellteta}
+  \int_{\Ye(\bx)} A(\bx, x/\varepsilon)\nabla_x \teta_i(\bx, x/\varepsilon) \nabla_x \phi(x) dx =
+  - \int_{\Ye(\bx)} A(\bx, x/\varepsilon) e_i \nabla_x \phi(x) dx
+\end{equation}
+pour cela, on peut résonner par équivalence en faisant le chemin inverse en faisant les changements de variables inverses
+\begin{enumerate}
+\item $x\rightarrow x+\bx$
+\item $x\rightarrow \varepsilon x$
+\end{enumerate}
+\textbf{Remarque : }par des arguments de pseudo périodicité on peut montrer que le premier changement de variable ne change pas $A(x, x/\varepsilon)$.
+On retrouve alors l'équation sur $Y$ avec les $w_i$ :
+\[
+    \int_{Y} A(y)\nabla_y w_i(y) \nabla_y \phi(\bx+\varepsilon y) dy =
+  - \int_{Y} A(y) e_i \nabla_y \phi(\bx+\varepsilon y) dy \qquad \forall i \in \{1, 2\}, \forall \phi\in V_\varepsilon(\Ye)
+\]
+mais on voudrait montrer cette égalité $\forall \tphi \in V$, ce qui est équivalent car
+
+\[
+  \forall \tphi \in V, \exists \phi \in V_\varepsilon(\Ye) \quad \text{tq} \quad \tphi(x) =
+  \phi(\bx+\varepsilon y) \text{ en tout points associés } x \rightarrow y
+\]
+or l'\autoref{eq:pbcellteta} étant vraie $\forall \phi \in V_\varepsilon(\Ye)$, on peut bien écrire 
+
+\begin{equation}
+  \int_{Y} A(y)\nabla_y w_i(y) \nabla_y \phi(y) dy =
+  - \int_{Y} A(y) e_i \nabla_y \phi(y) dy \qquad \forall i \in \{1, 2\}, \forall \phi\in V
+\end{equation}
+
+\question{3}{Écrire la formulation discrète intégrale}
+Pour alléger le calcul suivant, on pose les conventions d'écriture suivantes
+\begin{itemize}
+\item
+  $ 
+  \Ah = \left(
+    \begin{matrix}
+      \Ah_{11} & \Ah_{12} \\
+      \Ah_{21} & \Ah_{22}
+    \end{matrix}
+  \right)
+  $
+\item $ \partial_{x_i} \rightarrow \partial_i, \quad \forall i \in\{1,2\}$  
+\item 
+  $
+  B = \left(
+    \begin{matrix}
+      1+\partial_1 \teta_1 &   \partial_1 \teta_2 \\
+        \partial_2 \teta_1 & 1+\partial_2 \teta_2
+    \end{matrix}
+  \right)
+  = \left(
+    \begin{matrix}
+      e_1 + \nabla_x \teta_1 & e_2 + \nabla_x \teta_2
+    \end{matrix}
+  \right)
+  = \left(
+    \begin{matrix}
+      B_1 & B_2
+    \end{matrix}
+  \right)
+  = I + \nabla_x \teta
+  $
+\end{itemize}
+et on ne note pas les arguments des fonctions.
+Commençons par écrire $\Ah\nabla_x w_j$ :
+\begin{equation}
+  \begin{aligned}
+    \Ah\nabla_x w_j &=
+    \left(
+      \begin{matrix}
+        \Ah_{11} & \Ah_{12} \\
+        \Ah_{21} & \Ah_{22}
+      \end{matrix}
+    \right)
+    \left(
+      \begin{matrix}
+        \partial_1 w_j \\
+        \partial_2 w_j
+      \end{matrix}
+    \right) \\
+    &=
+    \left(
+      \begin{matrix}
+        \Ah_{11} \partial_1 w_i + \Ah_{12} \partial_2 w_i \\
+        \Ah_{21} \partial_1 w_i + \Ah_{22} \partial_2 w_i 
+      \end{matrix}
+    \right)
+  \end{aligned}
+\end{equation}
+on peut maintenant multiplier par la droite
+\begin{equation}
+  \begin{aligned}
+    \Ah\nabla_x w_j \nabla_x w_i =(\Ah_{11} \partial_1& w_i + \Ah_{12} \partial_2 w_i) \partial_1 w_i
+    + (\Ah_{21} \partial_1 w_i + \Ah_{22} \partial_2 w_i ) \partial_2 w_i \\
+    = \frac{1}{|\Ye|} \int_{\Ye} &A(e_1 + \nabla_x \teta_1)\cdot(e_1 + \nabla_x \teta_1) \partial_1 w_j \partial_1 w_i + \\
+    &A(e_2 + \nabla_x \teta_2)\cdot(e_1 + \nabla_x \teta_1) \partial_2 w_j \partial_1 w_i +\\ 
+    &A(e_1 + \nabla_x \teta_1)\cdot(e_2 + \nabla_x \teta_2) \partial_1 w_j \partial_2 w_i +\\
+    &A(e_2 + \nabla_x \teta_2)\cdot(e_2 + \nabla_x \teta_2) \partial_2 w_j \partial_2 w_i  \\
+    = \frac{1}{|\Ye|} \int_{\Ye} &A B_1 \partial_1 w_j \cdot B_1 \partial_1 w_i + A B_2 \partial_2 w_j \cdot B_1 \partial_1 w_i +\\ 
+    &A B_1 \partial_1 w_j \cdot B_2 \partial_2 w_i + A B_2 \partial_2 w_j \cdot B_2 \partial_2 w_i \big] \\
+    = \frac{1}{|\Ye|} \int_{\Ye} &A (B_1 \partial_1 w_j + B_2 \partial_2 w_j ) \cdot B_1 \partial_1 w_i + \\
+    &A (B_1 \partial_1 w_j  + B_2 \partial_2 w_j )\cdot B_2 \partial_2 w_i +\\
+    = \frac{1}{|\Ye|} \int_{\Ye} &A  B\nabla_x w_j \cdot B\nabla_x w_i  \\
+    = \frac{1}{|\Ye|} \int_{\Ye} &A(I + \nabla_x \teta) \nabla_x w_j (I + \nabla_x \teta) \nabla_x w_i
+  \end{aligned}
+\end{equation}
+cette équation appliquée aux points corrects donne
+\begin{equation*}
+  \begin{aligned}
+    \Ah\nabla_x w_j \nabla_x w_i = \frac{1}{|\Ye(x_{T, k})|} \int_{\Ye(x_{T, k})} A(x_{T, k}, x/\varepsilon)&(I + \nabla_x \teta(x_{T, k},
+    x/\varepsilon)) \nabla_x w_j(x_{T, k}) \\
+    &(I + \nabla_x \teta(x_{T, k}, x/\varepsilon)) \nabla_x w_i(x_{T, k})
+  \end{aligned}
+\end{equation*}
+
+\question{5}{Pb cell sur le dernier $\tw$}
+
+En passant le membre de droite dans l'\autoref{eq:pbcellteta}, on retrouve
+\begin{equation}
+  \begin{aligned}
+    &\int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)(e_i + \nabla_x \teta_i(x_{T,k}, x/\varepsilon)) \nabla_x \phi(x) dx = 0 \\
+    \iff &\int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_i \nabla_x \phi(x) dx = 0 \\
+  \end{aligned}
+\end{equation}
+on peut donc écrire les couples d'équations scalaires $\forall i,l \in \{1,2\}$ 
+\begin{equation}
+  \begin{aligned}
+    &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_1 dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_2 dx = 0 \\ 
+    \end{cases}   \\                     
+    \iff &\begin{cases}                          
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) (\nabla w_l)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) (\nabla w_l)_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases}
+  \end{aligned}
+\end{equation}
+avec une disjonction de cas on trouve
+\begin{equation}
+  \begin{aligned}
+    &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_1(x_{T,k}, x/\varepsilon) (\nabla w_1)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_2(x_{T,k}, x/\varepsilon) (\nabla w_1)_2 \nabla_x \phi(x) dx = 0 \\
+    \end{cases} && l=1\\
+    et~~ &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_1(x_{T,k}, x/\varepsilon) (\nabla w_2)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_2(x_{T,k}, x/\varepsilon) (\nabla w_2)_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases} && l=2()\\
+    \iff &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases} \\
+    \iff &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_1(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_2(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases}
+  \end{aligned}
+\end{equation}
+d'où 
+\begin{equation}
+  \label{eq:pbcelltw}
+  \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_l(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \quad \forall l \in \{1,2\}\\
+\end{equation}                                       
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

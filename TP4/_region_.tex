@@ -1,0 +1,122 @@
+\message{ !name(rapport.tex)}\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+
+% MATH
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+%\newtheorem{cusdef}{Def}
+%\newtheorem{custhm}{Thm}
+%\newtheorem{cuscor}{Cor}
+%\newtheorem{cusrk}{Rk}
+\newenvironment{cusenv}[2]
+{\begin{samepage}\noindent\textbf{#1} -- (#2) \par}
+{\end{samepage} \bigskip}
+
+\newenvironment{cusdef}[1]
+{\begin{cusenv}{Def}{#1}}{\end{cusenv}}
+
+\newenvironment{custhm}[1]
+{\begin{cusenv}{Thm}{#1}}{\end{cusenv}}
+
+\newenvironment{cuscor}[1]
+{\begin{cusenv}{Cor}{#1}}{\end{cusenv}}
+
+\newenvironment{cusprop}[1]
+{\begin{cusenv}{Prop}{#1}}{\end{cusenv}}
+
+\newenvironment{cusrk}[1]
+{\begin{cusenv}{Rk}{#1}}{\end{cusenv}}	
+
+% MISE EN FORME
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
+
+
+% MACROS
+\usepackage{xparse}
+\newcommand{\smbox}[1]{\mbox{\footnotesize #1}}
+\newcommand{\Am}{\mathbb{A}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\M}{\mathbb{M}}
+\newcommand{\Ah}{A^{hom}}
+\newcommand{\bx}{\bar{x}}
+\newcommand{\teta}{\tilde{\eta}}
+\newcommand{\tphi}{\tilde{\phi}}
+\newcommand{\Ye}{Y_\varepsilon}
+\newcommand{\tw}{\tilde{w}}
+\newcommand{\ie}{\emph{i.e.} }
+\newcommand{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand{\sca}[2]{\big<#1, #2\big>}
+\newcommand{\cont}[1]{\mathcal{C}^{#1}}
+\newcommand{\question}[2]{\paragraph{Question #1.}\textit{#2} \\}
+\newcommand{\Hd}{H^1_{\#}}
+
+
+
+\title{Rapport TP X01 \\ TP4}
+\author{Aurélien Valade}
+\date{}
+
+\begin{document}
+
+\message{ !name(rapport.tex) !offset(155) }
+  \begin{cases}
+    \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_1 dx = 0 \\
+    \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_2 dx = 0 \\ 
+  \end{cases} \iff                        
+  \begin{cases}                          
+    \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) (\nabla w_l)_1 \nabla_x \phi(x) dx = 0 \\
+    \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) (\nabla w_l)_2 \nabla_x \phi(x) dx = 0 \\ 
+  \end{cases}
+\end{equation}
+donc avec une disjection de cas on trouve
+\begin{equation}
+  \begin{aligned}
+    &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_1(x_{T,k}, x/\varepsilon) (\nabla w_1)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_2(x_{T,k}, x/\varepsilon) (\nabla w_1)_2 \nabla_x \phi(x) dx = 0 \\
+    \end{cases}
+    \quad et \quad
+    \begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_1(x_{T,k}, x/\varepsilon) (\nabla w_2)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_2(x_{T,k}, x/\varepsilon) (\nabla w_2)_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases} \\
+    &\begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases}
+    \iff
+    \begin{cases}
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_1(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_2(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases}
+  \end{aligned}
+\end{equation}
+d'ou $\forall l \in \{1,2\}$
+\begin{equation}
+  \label{eq:pbcelltw}
+  \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_l(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\
+\end{equation}                                       
+
+\message{ !name(rapport.tex) !offset(152) }
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
