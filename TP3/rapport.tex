@@ -120,7 +120,31 @@ périodiques se trouvent eux dans le dossier \texttt{geoms\_per/} de même qu'un
 dossier \texttt{SolutionExacte/} et la second partie dans le dossier \texttt{SolutionPbHomogeneise/}. 
 
 De plus, le corps de la routine principale se trouve maintenant dans \texttt{principal\_dirichlet\_aux.m}, cependant le fichier script est toujours bien
-\texttt{principal\_dirichlet.m}.
+\texttt{principal\_dirichlet.m}. La \autoref{tab:funcs} répertorie l'ensemble des fonctions utilisées et explique rapidement leur détail. 
+
+\begin{table}
+  \centering
+  \begin{tabular}{c|p{.5\textwidth}}
+    Fonction                           & Utilité                                                                                      \\
+    \hline
+    \texttt{principal\_dirichlet}      & Script principal                                                                             \\
+    \hline
+    \texttt{principal\_dirichlet\_aux} & Construction des matrices $\K,~\M$ adaptées au problèmes, formation de la matrice de changement de base et
+                                         résolution du macro-problème                                                                 \\
+    \hline
+    \texttt{calc\_A\_homo}             & Résolution des problèmes de cellule et constuction de $\Ah$                                  \\
+    \hline
+    \texttt{A}                         & Retourne la matrice $A^\varepsilon$ pour $(y_1, y_2)$ donné                                  \\
+    \hline
+    \texttt{f}                         & Retourne le second membre en un point (ou ensemble de points)  $(y_1, y_2)$ donné(s)         \\
+    \hline
+    \texttt{matK\_elem(\_pbcell)}      & Calcule la contribution d'une cellule à la matrice de rigidité (pour le problème de cellule) \\
+    \hline
+    \texttt{matM\_elem}                & Calcule la contribution d'une cellule à la matrice de masse
+  \end{tabular}
+  \caption{Descriptif des fonctions employées}
+  \label{tab:funcs}
+\end{table}
 
 \section{Solution exacte}
 
@@ -172,7 +196,7 @@ calcul $f^\varepsilon$ de sorte à ce que la solution soit
                                (\sin(2 \pi  y_2) + 4)  \sin(\pi y_2)  \cos(\pi y_1)  \cos(2 \pi  y_1) +
                              (\sin(2 \pi  y_1) + 1)  (\sin(2 \pi  y_2) + 4)  \sin(\pi y_1)  \sin(\pi y_2))$} \\
   \end{tabular}
-  \caption{Matrices de diffusion et seconds membres associés. Dans un soucie de lisibilité les fonctions sont données pour $\varepsilon=1$. }
+  \caption{Matrices de diffusion et seconds membres associés.}
   \label{tab:Af}
 \end{table}
 
@@ -192,15 +216,15 @@ faible, les courbes sont moins monotones.
   \centering
   \includegraphics[height=.25\textheight]{SolutionExacte/err_L2} 
   \includegraphics[height=.25\textheight]{SolutionExacte/err_H1} 
-  \caption{Erreurs $L^2$ et $H^1$ en fonction du pas du maillage pour $\varepsilon=1$ en bleu et  $\varepsilon=20$ en rouge. On est ici dans le cas
+  \caption{Erreurs $L^2$ et $H^1$ en fonction du pas du maillage pour $\varepsilon=1$ en bleu et  $\varepsilon=1/20$ en rouge. On est ici dans le cas
     (iii), mais des courbes similaires sont obtenues dans les cas (iv) et (v). }
   \label{fig:err_msh}
 \end{figure}
 
 On peut aussi observer un phénomène intéressant de résolution de l'erreur en fonction du maillage et de $\varepsilon$. Quand $\varepsilon$ tend vers
 zéro, la période des oscillation passe sous la taille caractéristique des cellules $h$, et les oscillations attendues disparaissent comme le montre la
-\autoref{fig:osc_eps}. Cela amène à des différences qualitatives entre solution numérique et solution exacte \ie le profile de la solution numérique
-ne peut plus suivre le profile exact. Il est cependant difficile de repérer ce ``décrochage'' sur les courbes des erreurs $L^2$ et $H^1$ augmentent
+\autoref{fig:osc_eps}. Cela amène à des différences qualitatives entre solution numérique et solution exacte \ie le profil de la solution numérique
+ne peut plus suivre le profil exact. Il est cependant difficile de repérer ce ``décrochage'' sur les courbes des erreurs $L^2$ et $H^1$ augmentent
 très rapidement en fonction de $1/\varepsilon$, puis que plus que linéairement dans un graphe log-log comme on peut le voir en
 \autoref{fig:err_eps}.   
 \begin{figure}
@@ -220,7 +244,7 @@ très rapidement en fonction de $1/\varepsilon$, puis que plus que linéairement
   \caption{Erreurs $L^2$ (en haut) et $H^1$ (en bas) en fonction de la taille d'une cellule $\varepsilon$. On trace en bleu pour un maillage avec
     $h=0.1$ et en rouge pour un second maillage avec $h=0.02$. On est ici dans le cas (iii). Il est intéressant de noter que l'erreur relative
     diverge, et atteint sur ce graphe un facteur $10$.}
-  \label{fig:osc_eps}
+  \label{fig:err_eps}
 \end{figure}
 \section{Solution au problème homogénéisé}
 
@@ -432,42 +456,66 @@ d'une des deux variables $y_i$ alors la solution au problème de cellule associ�
 
 \begin{figure}
   \centering
-  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/w1}
-  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/w2} 
-  \caption{Solutions des problèmes de cellule pour le cas (ii), avec un maillage de $h=0.025$.}
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/w1}
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/w2} \\
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/w1_v}
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/w2_v} \\ 
+  \caption{Haut : solutions des problèmes de cellule pour le cas (ii), avec un maillage de $h=0.025$. Bas : solutions des problèmes de cellule pour le
+    cas (v), toujours avec un maillage de $h=0.025$.}
   \label{fig:sol_pbcell}
 \end{figure}
 
-
 On retrouve bien les coefficients recherchés pour les cas (iii), (iv) et (v) comme prévu. Le reste du solveur étant le même que précédemment nous ne
 referons pas les courbes de convergence en fonction du maillage pour cette partie là du code, on ne montrera pas non plus les résultats ainsi obtenus
-puisqu'il s'agit d'un basique sinus. Cependant on pourra voir les différences entre solution homogène et solutions $\varepsilon$-dépendantes en
-\autoref{fig:diffs} et les erreurs $L^2$ et $H^1$ associées en \autoref{fig;errhom}. On remarque que l'erreur $L^2$ décroît bien pour une gamme de
-$\varepsilon$ mais commence à raugmenter à partir d'un certain $\varepsilon$ seuil. On pourrait attribuer cette erreur à la non résolution de
-l'erreur, de plus que celle ci commence à apparaître qualitativement sur les graphes en même temps, même si on a vu en première partie que celle ci ne
-semblait pas visible sur les courbes d'erreur. Pour vérifier cela on aimerait refaire les calculs avec un maillage plus fins, cependant mon ordinateur
-n'est pas capable d'en gérer (manque de mémoire). On pourrait suggérer de travailler avec des maillage moins fins, cependant il ne semble pas y avoir
-de différence sur les maillages ``proches'' et j'ai peur que de travailler avec des maillage beaucoup plus grossiers fassent apparaître d'autres types
-d'erreur.
-
-On observe aussi aisément que l'erreur $H^1$ ne converge pas, comme cela était annoncé par la théorie.
+puisqu'il s'agit d'un basique sinus. 
 
 
+On pourra voir les différences entre solution homogène et solutions $\varepsilon$-dépendantes en \autoref{fig:diffs}, ainsi qu'une figure ou cette
+différence est projetée sur l'axe $y_1$ pour pouvoir observer plus aisément les oscillations. En effet on peut assez rapidement voir sur cette figure
+que sur certaines zones, les oscillations sont trop rapides et ne sont plus résolues sur le maillage.
 
 \begin{figure}
   \centering
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/diff_eps2}
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/diff_eps4} \\
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/diff_eps15}
+  \includegraphics[width=0.45\textwidth]{SolutionPbHomogeneise/diff_eps20} \\
   \includegraphics[width=.9\textwidth]{SolutionPbHomogeneise/non_res_osc}
-  \caption{Profiles des erreurs en deux dimensions (panneaux supérieurs) et en fonction de l'abscisse (panneau inférieur).}
+  \caption{Profils des erreurs en deux dimensions pour le cas (v) (panneaux supérieurs) et en fonction de l'abscisse pour le cas (iii) (panneau
+    inférieur). On a ici des maillage avec $h=0.025$.}
   \label{fig:diffs}
 \end{figure}
 
+On peut osberver les erreurs $L^2$ et $H^1$ associées en \autoref{fig:errhom}. On remarque que l'erreur $L^2$ décroît bien pour une gamme de
+$\varepsilon$ mais commence à raugmenter à partir d'un certain $\varepsilon$ seuil. On pourrait attribuer cette erreur à la non résolution de
+l'erreur, de plus que celle ci commence à apparaître qualitativement sur les graphes en même temps, même si on a vu en première partie que celle ci ne
+semblait pas visible sur les courbes d'erreur. Pour vérifier cette conjecture on fait les calculs sur deux maillages différents, et on observe en effet
+que le ``décrochage'' se fait plus vite sur le maillage le plus grossier. Cependant, bien que la zone où la décroissance est de la forme
+attendu \ie en $1/\varepsilon^p$ soit relativement courte, il semble que la décroissance soit plus en $1/\varepsilon^2$ qu'en $1/\varepsilon$ qui
+serait le résultat attendu. Il m'est cependant impossible d'agrandir cette zone avec la puissance limitée de mon ordinateur.
+
+On observe aussi aisément que l'erreur $H^{1/2}$ ne converge pas, comme cela était annoncé par la théorie, et reste en $\mathcal{O}(1)$, si c'est n'est
+plus. L'erreur $H^{1/2}$ est calculée avec la matrice de rigidité dans le cas homogène, faute de mieux. 
+
 \begin{figure}
   \centering
-  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/err_L2_eps}
-  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/err_H1_eps} 
-  \caption{Erreurs $L^2$ et $H^1$ par rapport à la solution homogénéisé en fonction de $\varepsilon$. On est ici dans le cas (îv), avec un maillage de
-    $h=0.025$.}
+  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/errL2_eps}
+  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/errH1_eps}
+  \caption{Erreurs $L^2$ et $H^1$ pour deux pas de maillage différents (en bleu $h=0.2$ et en rouge $h=0.3$) pour le cas (v).}
   \label{fig:errhom}
+\end{figure}
+
+Une dernière étude sur la convergence du problème dégradé \ref{pb:celleta} vers le problème de cellule normale montre que si $\eta$ est assez petit,
+il semble ne pas y avoir de différences notable dans la norme de $\Ah$ comme on peut le voir dans la \autoref{fig:Aheta} qui montre une courbe quasi
+constante. On s'attendrait à avoir une courbe polynômiale en $C_0\eta^2 + C_1$ d'après ce qu'on a démontré sur la convergeance du problème dégradé, et la
+courbe représentée pourrait suivre une telle loi, mais il difficile d'en dire plus sur ces données. Malheureusement, étant déjà beaucoup en retard sur
+ce TP, je n'ai pas mené d'autres études. 
+
+\begin{figure}
+  \centering
+  \includegraphics[height=.27\textheight]{SolutionPbHomogeneise/Ah_eta}
+  \caption{Norme de $\Ah$ dans le cas (v) en fonction de $\eta$ du problème dégradé.}
+  \label{fig:Aheta}
 \end{figure}
 
 \end{document}

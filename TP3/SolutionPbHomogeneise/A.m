@@ -10,7 +10,6 @@ function val = A(x, y, Atype, epsilon)
 % OUTPUT - val: valeur de la matrice sur ce point.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%A COMPLETER
 if epsilon>=0
     if (Atype == 1)
         val = [1 0; 0 1];
@@ -25,7 +24,7 @@ if epsilon>=0
     elseif (Atype == 6)
         val =  sin(10*x*epsilon)*eye(2);
     end
-else
+else %%% On veut récupérer la matrice homogène %%%
     if (Atype == 1)
         val = [1 0; 0 1];
     elseif (Atype == 2)

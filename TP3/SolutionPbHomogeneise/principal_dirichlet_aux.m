@@ -27,10 +27,11 @@ KK = sparse(Nbpt,Nbpt); % matrice de rigidite
 MM = sparse(Nbpt,Nbpt); % matrice de rigidite
 LL = zeros(Nbpt,1);     % vecteur second membre
 
+%%% calcul de Ahomogène si epsilon <0
 if epsilon<=0
     Ah = calc_A_homo(namemsh_pbcell, Atype, eta);
 else 
-    Ah = eye(2); % on s'en fout...
+    Ah = eye(2); % pas d'importance
 end
 % $$$ disp(sprintf('Ah11 %.10f', Ah(1, 1)));
 % $$$ disp(Ah);
@@ -58,14 +59,13 @@ for l=1:Nbtri
     end     
 end % for l
 
-% Calcul du second membre L
-% -------------------------
-% A COMPLETER
-% utiliser la routine f.m
+% Calcul du second membre L et AA
+% -------------------------------
 FF = f(Coorneu(:,1), Coorneu(:,2), Atype);
 LL = MM*FF;
 AA = KK;
 
+%%% MATRICE DE CHANGEMENT DE BASE %%%
 PP = sparse(horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes)));
 AA0 = PP*AA*PP';
 LL0 = PP*LL;

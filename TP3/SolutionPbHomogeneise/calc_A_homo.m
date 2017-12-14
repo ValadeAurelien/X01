@@ -1,7 +1,11 @@
 function Ah = calc_A_homo(namemsh, Atype, eta)
 
+%%% RESOLUTION DES PROBLÈMES DE CELLULE %%%
+%%% ON REPREND LE CODE DE PRINCIPAL_NEUMANN_AUX %%%
+
 [Nbpt,Nbtri,Coorneu,Refneu,Numtri,Reftri,Nbaretes,Numaretes,Refaretes]=lecture_msh(namemsh);
 
+%%% constructions des matrices %%%
 KK = sparse(Nbpt,Nbpt); % matrice de rigidite
 MM = sparse(Nbpt,Nbpt); % matrice de rigidite
 for l=1:Nbtri
@@ -25,6 +29,7 @@ for l=1:Nbtri
     end     
 end
 
+%%% construction de la matrice de changement de base %%%
 NbaretesNS = Nbaretes-4;
 PPmod = zeros(Nbpt, 1+NbaretesNS/2);
 % On fait les 4 angles sur la même colonne
@@ -47,9 +52,11 @@ PPcentre = vertcat(zeros(Nbaretes, Nbpt-Nbaretes), ...
 PP = [PPmod PPcentre];
 PP = sparse(PP);
 
+%%% membre de droite %%%
 LL_1 = - KK * Coorneu(:, 1);%-(Coorneu(:, 1)' * KK)';
 LL_2 = - KK * Coorneu(:, 2);%-(Coorneu(:, 2)' * KK)';
 
+%%% matrice à inverser pour le problème dégradé %%%
 AA = KK+eta*MM;
 
 AAp = PP'*AA*PP;
@@ -62,16 +69,12 @@ Wp_2 = AAp\LLp_2;
 W_1 = PP*Wp_1;
 W_2 = PP*Wp_2;
 Ws = [W_1 W_2];
+
+%%% affichage des résultats si nécessaire %%%
 % $$$ plot(Coorneu(:, 1), W_1, '.');
-affiche(W_1, Numtri, Coorneu, 'test');
-affiche(W_2, Numtri, Coorneu, 'test 2');
+% $$$ affiche(W_1, Numtri, Coorneu, 'test');
+% $$$ affiche(W_2, Numtri, Coorneu, 'test 2');
 % $$$ disp([max(abs(W_1)), max(abs(W_2))]);
 
+%%% Calcul de Ah en un produit matriciel %%%
 Ah = (Coorneu + Ws)' * KK * (Coorneu + Ws);
-% $$$ Ah = zeros(2);
-% $$$ for i=1:2
-% $$$     for j=1:2
-% $$$         Ah(j, i) = ( Coorneu(:,i) + Ws(:,i) )' * KK * ...
-% $$$             ( Coorneu(:,j) + Ws(:,j) );
-% $$$     end
-% $$$ end
