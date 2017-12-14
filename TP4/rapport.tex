@@ -66,7 +66,8 @@
 Dans ce rapport, nous allons nous pencher sur la description et l'implémentation d'un code de résolutions d'équations aux dérivées partielles par méthode
 d'éléments finis et résolution hétérogène multi-échelles, termes que nous détaillerons plus loin. Ce travaille se présente en deux parties : tout d'abord
 en une analyse du papier de \cite{abdulle2009short}, puis une tentative de ré-implémentation de certaines parties de ce code à l'aide des routines développées
-dans les TP précédents. 
+dans les TP précédents. Contrairement au papier qui présente des méthodes pour différents types de maillage en deux ou trois dimensions, nous nous
+bornerons à des explications en deux dimensions avec des maillages de simplexes, c'est à dire triangulaires dans notre cas. 
 
 \section{Analyse du papier}
 
@@ -74,11 +75,11 @@ Ce papier a pour but l'implémentation d'un code MATLAB simple et multifonctions
 d'EDP dont la physique amène à considérer des phénomènes physiques couplés sur plusieurs échelles d'espaces distinctes. Pour la résolution de tels
 problèmes, une approche frontale serait donc de discrétiser tout l'espace avec un maillage dont les cellules seraient à l'échelle du phénomène physique le
 plus petit, mais cela amènerait à d'énormes problèmes numériques très coûteux à résoudre. Parfois la physique demande même à ce que la taille du phénomène
-microscopique tende vers zéro, il est alors impossible d'attaquer le problème brutallement et il faut donc créer un meilleur cadre analytique et trouver
+microscopique tende vers zéro, il est alors impossible d'attaquer le problème brutalement et il faut donc créer un meilleur cadre analytique et trouver
 des méthodes numériques plus efficaces quitte à faire des approximations.
 
 La littérature semble être fournie en ce qui concerne l'approche analytique de ce genre de problème multi-échelles, cependant peu d'outils numériques
-semblent être disponibles aujourd'hui, ce à quoi le travail présenté dans ce papier veut rémédier. 
+semblent être disponibles aujourd'hui, ce à quoi le travail présenté dans ce papier veut remédier. 
 
 \subsection{Cadre mathématique de la résolution}
 
@@ -105,8 +106,9 @@ L'étude présentée dans ce papier porte sur des méthodes d'éléments finis (
 \end{rmq}
 
 \begin{rmq}
-  La dépendance en $\varepsilon$ de $\Ae$ n'est pas forcément de la forme vue en cours $\Ae(x, x/\varepsilon)$ mais peut être plus complexe voire
-  implicite, bien qu'on ne considère dans la suite que ce cas simple. Il est cependant nécessaire d'avoir pour tout $\varepsilon$ les propriétés suivantes :
+  La dépendance en $\varepsilon$ de $\Ae$ n'est pas forcément de la forme vue en cours, \ie périodique $\Ae(x, x/\varepsilon)$, mais elle peut être
+  quasi-périodique $\Ae(x, x/\varepsilon)$, ou bien même implicite, bien qu'on ne considère dans la suite que ce cas simple. Il est cependant nécessaire
+  d'avoir pour tout $\varepsilon$ les propriétés suivantes :
   \[
     \exists \lambda, \Lambda > 0 \st \lambda \xi^2 < (\Ae \xi) \cdot \xi < \Lambda \xi^2 \quad \forall \xi \in \R^d
   \]
@@ -129,7 +131,7 @@ Les deux méthodes présentées plus loin permettent de palier à ce problème p
 On va poser ici la formulation variationnelle discrète du problème pour mieux voir les éléments qui nous intéressent réellement, à savoir les coefficients
 de la matrice de rigidité.
 
-Par une démonstration vue plusieure fois en cours dans un cadre plus restreint\footnote{Multiliplication par $\phi$,
+Par une démonstration vue plusieurs fois en cours dans un cadre plus restreint\footnote{Multiplication par $\phi$,
   Green-Ostrogradski deux fois dont la deuxième pour changer l'intégrale sur $g_D$.}, on obtient que le problème \ref{pb:parael} est équivalent à
 \begin{equation}
   \underbrace{\int_\Omega (\Ae \nabla \ue)\cdot \nabla \phi}_{\Be(\ue, \phi)} =
@@ -140,19 +142,19 @@ Par une démonstration vue plusieure fois en cours dans un cadre plus restreint\
 \begin{rmq}
   On peut réécrire immédiatement
   \[
-    l^{\varepsilon}(\phi) = l(\phi) - \Be(g_D, \phi)
+    l^{\varepsilon}(\phi) = l(\phi) - \Be(g_D, \phi).
   \]
 \end{rmq}
 
-Sous certaines conditions de coercivité et de continuité des fonctions (bi)linéaires en présence, on peut montrer que le problème est bien posé à l'aide
+Sous certaines conditions de coercitivité et de continuité des fonctions (bi)linéaires en présence, on peut montrer que le problème est bien posé à l'aide
 du théorème de Lax-Milgram.
 
 Il apparaît que le point centrale de la difficulté de cette équation est dans la fonction bilinéaire $\Be$. Ce sont en effet ces coefficients que l'on
 cherchera à calculer par la méthode la plus adaptée pour quand $\varepsilon$ tend vers 0.
 
-Avant cela, discrétisons cette équation sur une base finie de fonctions de $L^2(\Omega)$. On se donne un maillage de simplex en deux
-dimensions\footnote{Le papier sus-mentionné va plus loin en considérant d'autres types de maillages, en 2D et en 3D.}. On note les sommets de ce maillage
-les $\{S_i\}_{1, N}$ et $\T_h$ l'ensemble des simplex. On définit l'ensemble des sommets les fonctions de $\R^g[X]$ avec $g\in\N$ le degré des polynômes
+Avant cela, discrétisons cette équation sur une base finie de fonctions de $L^2(\Omega)$. On se donne un maillage de simplexe en deux
+dimensions\footnote{Le papier susmentionné va plus loin en considérant d'autres types de maillages, en 2D et en 3D.}. On note les sommets de ce maillage
+les $\{S_i\}_{1, N}$ et $\T_h$ l'ensemble des simplexe. On définit l'ensemble des sommets les fonctions de $\R^g[X]$ avec $g\in\N$ le degré des polynômes
 choisi. Ces fonctions, notées $\{\varphi_i\}_{1, N}$ par la suite sont telles que
 \[
   \varphi_i(S_j) = \delta_{i,j} \quad \forall i, j \in [1, N]^2.
@@ -176,10 +178,11 @@ problème dérivé qui nous donne la solution $\uh=\lim_{\varepsilon\to 0}\ue$:
 \end{pb}
 
 
-L'avantage est ici que $\varepsilon$ a complétement disparu de l'équation et donc qu'un
+L'avantage est ici que $\varepsilon$ a complètement disparu de l'équation et donc qu'un
 maillage adapté aux grandes échelles seules suffit. Cependant il faut pour cela calculer $\Ah(\bx)$ au préalable \ie avant la résolution du macro
 problème. Pour cela on résout les problèmes dits de cellule en tout point $\bx \in \Omega$ pour trouver les $\{w_i\}_{1, d}$ : 
 \begin{equation}
+  \label{eq:cell}
   \int_Y A^1(\bx, y) \nabla w_i(\bx, y) \nabla \phi(y) \td y  = \int_Y A^1(\bx, y) e_i \nabla \phi(y) \td y
   \quad  \forall\phi\in L^2(\Omega) \qquad \forall i \in \{1, d\} 
 \end{equation}
@@ -194,10 +197,43 @@ et on peut finalement résoudre le système linéaire homogénéisé :
 \]
 avec $\K_{ij} = \int_\Omega (\Ah \varphi_i)\cdot \varphi_j, ~ U_i = \uh(S_i)$ et $L_i = l(\varphi_i) - \int_\Omega (\Ah g_D)\cdot \varphi_i$.
 
-Le gros inconvénient de cette méthode étant qui faut préalablement calculer le tenseur homogénéisé $\Ah$ et ce théoriquement en tout point de $\Omega$, ou
-bien au moins en un certain nombre de points assez élevés pour faire une quadrature.
+Le gros inconvénient de cette méthode étant qui faut préalablement calculer le tenseur homogénéisé $\Ah$ et ce théoriquement en tout point de $\Omega$ de
+l'espace discrétisé.
+
 
 \subsection{Différences et apport de la nouvelle méthode}
+
+La méthode de la FE-HMM (\emph{finite elements heterogenous multi-scale method}) présente tous les avantages d'une méthode d'homogénéisation, mais permet
+en plus d'éviter le calcul de $\Ah(\bx)$ en un grand nombre des points. On peut ainsi travailler exclusivement avec comme entrée les données initiales,
+et calculer le moins de données intermédiaires.
+
+Deux différentes échelles se distinguent :
+\begin{itemize}
+\item la macro-échelle, de taille caractéristique de maillage $H$
+\item et la micro-échelle, de taille caractéristique de maillage $h$,
+\end{itemize}
+la première étant celle associée du système physique, et la seconde étant une échelle arbitrairement plus petite dont l'usage sera présisé plus loin.
+
+\begin{rmq}
+  On parlera dans la suite de macro-maillage (resp. micro-) composé de macro-cellules (resp. micro-) par racourcis de langage pour désigner
+  les quantités liées à la macro-échelle (resp. micro-). 
+\end{rmq}
+
+On aurait a priori envie d'associer directement la micro-échelle à la taille d'une maille de la macro, \ie de mailler chaque macro-cellule par un
+micro-maillage. Cependant la méthode proposée est un peu différente. On va choisir dans macro-cellule un ensemble de points pour faire une quadrature.
+Sont proposées deux quadratures :
+\begin{itemize}
+\item une quadrature avec un unique point au centre de la cellule
+\item une quadrature de Legendre à deux points en chaque direction de l'espace, on aura donc 4 points en $\{(1/2 \pm \sqrt{3}/6,~1/2 \pm \sqrt{3}/6)\}$
+  en considérant une maille centrée en $(0, 0)$,
+\end{itemize}
+auxquelles on pourrait ajouter d'autres quadratures d'ordre plus élevé par exemple. On va considérer dans la suite que l'on travaille dans le cas de la
+quadrature à quatres points. 
+
+Autour de chaque point de cette quadrature on forme un carré de côté $\delta \ll H$. C'est sur ces espaces que l'on va résoudre les problèmes de
+cellules, et c'est cette échelle que nous appelont micro-échelle.
+
+
 
 \question{1}{Mq \autoref{eq:Ahom} peut se réécrire sous la forme de \autoref{eq:AhomYeps}}
 
@@ -233,7 +269,10 @@ pour cela, on peut résonner par équivalence en faisant le chemin inverse en fa
 \item $x\rightarrow x+\bx$
 \item $x\rightarrow \varepsilon x$
 \end{enumerate}
-\textbf{Remarque : }par des arguments de pseudo périodicité on peut montrer que le premier changement de variable ne change pas $A(x, x/\varepsilon)$.
+\begin{rmq}
+  Par des arguments de pseudo périodicité on peut montrer que le premier changement de variable ne change pas $A(x, x/\varepsilon)$.
+\end{rmq}
+
 On retrouve alors l'équation sur $Y$ avec les $w_i$ :
 \[
     \int_{Y} A(y)\nabla_y w_i(y) \nabla_y \phi(\bx+\varepsilon y) dy =
@@ -367,10 +406,10 @@ avec une disjonction de cas on trouve
       \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_1(x_{T,k}, x/\varepsilon) (\nabla w_1)_1 \nabla_x \phi(x) dx = 0 \\
       \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_2(x_{T,k}, x/\varepsilon) (\nabla w_1)_2 \nabla_x \phi(x) dx = 0 \\
     \end{cases} && l=1\\
-    et~~ &\begin{cases}
+    \text{et}~~ &\begin{cases}
       \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_1(x_{T,k}, x/\varepsilon) (\nabla w_2)_1 \nabla_x \phi(x) dx = 0 \\
       \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_2(x_{T,k}, x/\varepsilon) (\nabla w_2)_2 \nabla_x \phi(x) dx = 0 \\ 
-    \end{cases} && l=2()\\
+    \end{cases} && l=2\\
     \iff &\begin{cases}
       \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_1 \nabla_x \phi(x) dx = 0 \\
       \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_2 \nabla_x \phi(x) dx = 0 \\ 

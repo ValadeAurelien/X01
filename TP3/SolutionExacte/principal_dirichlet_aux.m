@@ -62,7 +62,7 @@ FF = f(Coorneu(:,1), Coorneu(:,2), Atype, epsilon);
 LL = MM*FF;
 AA = KK;
 
-PP = horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes));
+PP = sparse(horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes)));
 AA0 = PP*AA*PP';
 LL0 = PP*LL;
 
@@ -89,6 +89,8 @@ if (visualisation>0)
         affiche(UU, Numtri, Coorneu, sprintf(['Dirichlet UU - %s'], namemsh));           
         affiche(UU_exact, Numtri, Coorneu, sprintf(['Dirichlet ' ...
                             'UU exact - %s'], namemsh));
+        figure();
+        plot(Coorneu, abs(UU_exact-UU));
         if (visualisation>2)
             affiche(AA_exact, Numtri, Coorneu, sprintf(['Dirichlet AA - %s'], namemsh));           
             affiche(FF, Numtri, Coorneu, sprintf(['Dirichlet FF - ' ...

@@ -32,6 +32,8 @@ if epsilon<=0
 else 
     Ah = eye(2); % on s'en fout...
 end
+% $$$ disp(sprintf('Ah11 %.10f', Ah(1, 1)));
+% $$$ disp(Ah);
 % boucle sur les triangles
 % ------------------------
 for l=1:Nbtri
@@ -60,11 +62,11 @@ end % for l
 % -------------------------
 % A COMPLETER
 % utiliser la routine f.m
-FF = f(Coorneu(:,1), Coorneu(:,2));
+FF = f(Coorneu(:,1), Coorneu(:,2), Atype);
 LL = MM*FF;
 AA = KK;
 
-PP = horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes));
+PP = sparse(horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes)));
 AA0 = PP*AA*PP';
 LL0 = PP*LL;
 
@@ -75,7 +77,6 @@ UU0 = AA0\LL0;
 % Expression de la solution dans toute la base
 % ———————
 UU = PP'*UU0;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                        fin de la routine

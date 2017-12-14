@@ -7,6 +7,8 @@
 \usepackage{amsthm}
 \usepackage{mathtools}
 
+\newtheorem{pb}{Problème}
+\newtheorem{rmq}{Remarque}
 %\newtheorem{cusdef}{Def}
 %\newtheorem{custhm}{Thm}
 %\newtheorem{cuscor}{Cor}
@@ -54,11 +56,11 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\K}{\mathbb{K}}
 \newcommand{\M}{\mathbb{M}}
-\newcommand{\topo}{\mathcal{T}}
-\newcommand{\Lin}{\mathcal{L}}
-\newcommand{\Int}{\mbox{Int}\,}
-\newcommand{\st}{~\mbox{s.t.}~}
-\newcommand{\miff}{~\mbox{iff}~}
+\newcommand{\Ah}{A^{hom}}
+\newcommand{\uh}{u^{hom}}
+\newcommand{\fh}{f^{hom}}
+
+
 \newcommand{\ie}{\emph{i.e.} }
 \newcommand{\ms}{~~~}
 \newcommand{\norm}[1]{\left|\left|#1\right|\right|}
@@ -76,159 +78,270 @@
 
 \begin{document}
 
-\message{ !name(rapport.tex) !offset(20) }
+\message{ !name(rapport.tex) !offset(-3) }
+
+\maketitle
+
+\section{Intruction et structure du code}
+
+
+Le but de ce TP est de résoudre le problème suivant :
+
+\begin{pb}[$\varepsilon-$problème]
+  \label{pb:eps}
+  Soit $\varepsilon>0$, soient $A^\varepsilon, ~f^\varepsilon$ bien définies, trouver $u^\varepsilon\in H^1_0(\Omega)$ tel que  
+  \[
+    \begin{cases}
+      \nabla \big(A^\varepsilon(x,x/\varepsilon) \nabla u^\varepsilon\big) = f^\varepsilon(x, x/\varepsilon) \quad \mbox{sur}\quad \Omega\\
+      u^\varepsilon = 0 \quad \mbox{sur}\quad \partial\Omega.
+    \end{cases}
+  \]
+\end{pb}
+\begin{rmq}
+  On a $x =(x_1, x_1) \in \R^2$  et $x/\varepsilon y = (y_1, y_2) \in [0,1]^2$. Dans la suite on note $Y=[0,1]^2$ la cellule élémentaire sur laquelle les coefficients de
+  $A^\varepsilon$ sont périodiques. Dans les cas ou on ne travaille que sur une cellule on prend $\varepsilon=1$ et on note $A := A^1$. 
+\end{rmq}
+\begin{pb}
+  \label{pb:hom}
+  Trouver $u^0 \in H^1_0(\Omega)$ solution du $\varepsilon-$problème \ref{pb:eps} à la limite $\varepsilon\to 0 $.
+  \[
+    \begin{cases}
+      \nabla \big(\Ah(x) \nabla \uh\big) = \fh(x) \quad \mbox{sur}\quad \Omega\\
+      \uh= 0 \quad \mbox{sur}\quad \partial\Omega.
+    \end{cases}
+  \]
+\end{pb}
+
+
+Pour cela nous allons d'abord calculer numériquement les solutions du problème \ref{pb:eps} pour plusieurs valeurs de $\varepsilon>0$. Dans un second temps nous
+introduirons les problèmes de cellules que nous résoudrons numériquement, puis nous pourrons enfin calculer la solution au problème \ref{pb:hom}.
+
+La structure du code ainsi que l'arrangement des dossiers ont été un peu modifiés. Tous les \texttt{*.msh} pour les problèmes de Neumann ou Dirichlet se trouvent
+dans le dossier \texttt{geoms/} avec un executable \texttt{bash} pour en créer à volonté. Les \texttt{*.msh} pour les problèmes périodiques se trouvent eux dans
+le dossier \texttt{geoms\_per/} de même qu'un script pour les générer.
+
+De plus, le corps de la routine principale se trouve maintenant dans \texttt{principal\_dirichlet\_aux.m}, cependant le fichier script est toujours bien
+\texttt{principal\_dirichlet.m}.
+
+\section{Solution exacte}
+
+\subsection{Discrétisation}
+
+Le but de cette partie est d'étudier la convergence effective des solutions numériques vers des solutions analytiques connues. Les résultats présentés ici sont
+calculés à partir des routines implémentées pour les TP précédents.
+
+Nous allons donc résoudre le problème \ref{pb:eps} en faisant varier $A^\varepsilon$ et $f^\varepsilon$ de paire de sorte à ce que la solution $u$ soit connue et
+ne dépende pas de $\varepsilon$. L'ensemble des matrices de diffusion et leur seconds membres associés se trouvent en \autoref{tab:Af}. Dans tous ces cas on
+calcul $f^\varepsilon$ de sorte à ce que la solution soit
+\[
+  u^\varepsilon(x, y) = u(x, y) = \sin(\pi x)\sin(\pi y).
+\]
+
+\begin{table}
+  \centering
+  \begin{tabular}{c|c|p{0.5\textwidth}}
+    type & $A^\varepsilon$ & $f^\varepsilon$ \\
+    \hline
+    (i) & Id & $2\pi^2\sin(\pi y_1 )\sin(\pi y_2)$ \\
+    \hline
+    (ii) & $ \left(
+           \begin{matrix}
+             1 & 0 \\
+             0 & 2 
+           \end{matrix} \right) $   
+                           & $3\pi^2\sin(\pi y_1 )\sin(\pi y_2)$ \\
+    \hline
+    (iii) & $ \left(
+            \begin{matrix}
+              2+\sin(2\pi y_1) & 0 \\
+              0 & 4 
+            \end{matrix} \right)$   
+                           & {\small $2\pi^2 (-2 \cos(\pi y_1) \cos(2\pi y_1) +
+                             \sin(\pi y_1)\sin(2 \pi y_1) + 3 \sin(\pi y_1))\sin(\pi y_2)$} \\
+    \hline
+    (iv) & $ \left(
+           \begin{matrix}
+             2+\sin(2\pi y_1) & 0 \\
+             0 & 4+\sin(2\pi y_1)
+           \end{matrix} \right)$   
+                           & {\small $\pi^2 (-4 \cos(\pi y_1) \cos(2 \pi y_1) + 
+                             3 \sin(\pi y_1) \sin(2 \pi y_1) + 6 \sin(\pi y_1)) \sin(\pi y_2)$} \\
+    \hline
+    (v) & $ ( 2+\sin(2\pi y_1)) ( 4+\sin(2\pi y_2) )$ Id   
+                           & {\footnotesize $4 \pi^2                                                                     
+                             (- (\sin(2 \pi  y_1) + 1)  \sin(\pi y_1)  \cos(\pi y_2)  \cos(2 \pi  y_2) -
+                               (\sin(2 \pi  y_2) + 4)  \sin(\pi y_2)  \cos(\pi y_1)  \cos(2 \pi  y_1) +
+                             (\sin(2 \pi  y_1) + 1)  (\sin(2 \pi  y_2) + 4)  \sin(\pi y_1)  \sin(\pi y_2))$} \\
+  \end{tabular}
+  \caption{Matrices de diffusion et seconds membres associés. Dans un soucie de lisibilité les fonctions sont données pour $\varepsilon=1$. }
+  \label{tab:Af}
+\end{table}
+
 \section{Solution au problème homogénéisé}
 
 \subsection{Les problèmes de cellule}
 
-\question{1}{Montrer que le problème suivant est bien posé:}
+La difficulté mathématique à laquelle répond la méthode de l'homogénéisation est le passage du problème \ref{pb:eps} au problème dit homogénéisé
+\ref{pb:hom}. Il faut notamment calculer les coeffecients limites de $\Ah$ et $\fh$. Plus précisement, dans notre cas, nous travaillons avec $A^\varepsilon$ parfaitement périodique,
+on sait que l'on va avoir $\Ah$ constant. Pour garder la solution
+\[
+  \uh(x, y) = u(x, y) = \sin(\pi x)\sin(\pi y)
+\]
+il nous suffira de prendre
+\[
+  \fh = \pi^2 Tr(\Ah) u(x, y).
+\]
 
-Trouver $u \in V$ tel que
-\begin{equation}
-  \label{eq:pbcell}
-  \forall v \in V, \quad \int_Y A \nabla u \nabla v = - \int_Y A e_i \nabla v
-\end{equation}
-avec
-\begin{equation}
-  V = 
-  \left\{
-    \psi \in \Hd(Y), \quad \int_Y \psi = 0
-  \right\}
-\end{equation}
-On pose
-\begin{equation}
-  a(u,v) = \int_Y A \nabla u \nabla v, \quad
-  l(v) = -\int_Y A e_i \nabla v
-\end{equation}
+Les problèmes de cellules sont au nombre de dimensions spatiales du problème, donc deux dans notre cas. Ceux sont posés dans le problème \ref{pb:cell} sous leurs
+formes variationnelles.
+\begin{pb}
+  \label{pb:cell}
+  Trouver $u_i \in V$ tels que $\forall i \in \{1,2\}$
+  \begin{equation}
+    \forall v \in V, \quad \int_Y A \nabla u_i \nabla v = - \int_Y A e_i \nabla v 
+  \end{equation}
+  avec
+  \[
+    V = 
+    \left\{
+      \psi \in \Hd(Y), \qquad \int_Y \psi = 0
+    \right\}.
+  \]
+\end{pb}
+
+Montrons tout d'abord que ces problèmes sont bien posés. On prend l'une des deux équations, et l'on pose $u:=u_i$, de même on pose
+\[
+  (u,v) = \int_Y A \nabla u \nabla v, \quad
+  l(v) = -\int_Y A e_i \nabla v 
+\]
 
 On a bien $a(u,v)$ et $l(v)$ (bi)linéaires. Montrons que $a(u,v)$ continue 
-\begin{align}
-  \label{eq:ac}
+\begin{align*}
   \big|a(u,v)\big| &= \left| \int_Y A \nabla u \nabla v \right| \\
                    &\leq \norm{A\nabla u}_{L^2} \norm{\nabla v}_{L^2} && \mbox{Cauchy Schwarz} \\
                    &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} && \mbox{A bornée} \\
                    &\leq \beta \norm{u}_{\Hd} \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
-\end{align}
+\end{align*}
 
 Montrons que $l(v)$ est continue
-\begin{align}
-  \label{eq:ac}
+\begin{align*}
   \big|l(v)\big| &= \left| \int_Y A e_i \nabla v \right|  && \text{définition} \\
                  &\leq \norm{Ae_i}_{L^2} \norm{\nabla v}_{L^2} && \text{Cauchy Schwarz} \\
                  &\leq \beta_i \norm{\nabla v}_{L^2} && \text{$A$ bornée, donc $A e_i$ aussi} \\
                  &\leq \eta_i \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd}
-\end{align}
+\end{align*}
 
 Montrons que $a(u,v)$ est coercive
-\begin{align}
-  \label{eq:co}
+\begin{align*}
   a(u,u) &= \int_Y A \nabla u  \nabla u \\
          &\geq \xi \int_Y \nabla u^2  && \text{$A$ minorée par $\xi$}\\
          &\geq \xi \norm{\nabla u}^2_{L^2} \\
          &\geq \zeta \norm{u}^2_{\Hd} && \text{Pointcaré dans $V$} 
-\end{align}
+\end{align*}
 avec $\zeta = \frac{\xi}{(C^2+1)}$, $C$ étant la constante de poincaré associée à $V$.
 
+Cependant, les problèmes étant mal conditionnés sous ces formes, on va plutôt résoudre des problèmes dit dégradés 
+\begin{pb}[Problèmes dégradés]
+  \label{pb:celleta}
+  Soit $\eta>0$. Trouver $u_i \in \Hd$ tels que $\forall i \in \{1,2\}$
+  \begin{equation}
+    \forall v \in V, \quad \int_Y A \nabla u_i \nabla v + \eta \int_Y u_i v = - \int_Y A e_i \nabla v.
+  \end{equation}
+\end{pb}
 
-\question{2}{De même pour le problème modifié}
-
-Soit $\eta>0$. Trouver $u \in V$ tel que
-\begin{equation}
-  \label{eq:pbcelleta}
-  \forall v \in V, \quad \int_Y A \nabla u \nabla v + \eta \int_Y u v = - \int_Y A e_i \nabla v
-\end{equation}
-On pose
-\begin{equation}
-  a(u,v) = \int_Y A \nabla u \nabla v + \eta \int_Y u v \quad
+À nouveau, on choisie un $i$ et on pose $u:=u_i$, 
+\[
+  a(u,v) = \int_Y A \nabla u \nabla v + \eta \int_Y u v, \qquad
   l(v) = -\int_Y A e_i \nabla v
-\end{equation}
+\]
 
-On remarque que $l(v)$ reste la même que dans la question 1, il n'est donc pas nécéssaire de refaire les calculs.
+On note qu'en prenant $\phi=1$, on montre que $u$ est d'intrale nulle. Donc si $u\in\Hd$ résout le problème  \autoref{pb:celleta} alors $u\in V$, et respecte donc Poincaré.  \\
+On remarque aussi que $l(v)$ reste la même que prédemment, il n'est donc pas nécessaire de refaire les calculs. 
 
 Montrons que $a$ est toujours continue sous cette forme :
-\begin{align}
-  \label{eq:ac}
+\begin{align*}
   \big|a(u,v)\big| &\leq \left| \int_Y A \nabla u \nabla v \right| + \eta \left| \int_Y  u v \right| && \mbox{ineg. triang} \\
                    &\leq \norm{A\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \eta \norm{u}_{L^2} \norm{v}_{L^2} && \mbox{Cauchy Schwarz} \\
                    &\leq \beta \norm{\nabla u}_{L^2} \norm{\nabla v}_{L^2} + \eta \norm{u}_{L^2} \norm{v}_{L^2} && \mbox{A bornée} \\
                    &\leq \beta \norm{u}_{\Hd} \norm{v}_{\Hd} + \eta \norm{u}_{\Hd} \norm{v}_{\Hd} && \norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
                    &\leq (\beta + \eta) \norm{u}_{\Hd} \norm{v}_{\Hd}
-\end{align}
+\end{align*}
 
 Montrons maintenant que $a$ est toujours coercive
-\begin{align}
-  \label{eq:co}
+\begin{align*}
   a(u,u) &= \int_Y A \nabla u  \nabla u + \eta \int_Y u^2 \\
          &\geq \xi \norm{\nabla u}^2_{L^2} + \eta \norm{u}^2_{L^2} \\
          &\geq \zeta \norm{u}^2_{\Hd} + \eta \norm{ u}^2_{L^2} && \text{Poincaré dans }V\\
     \big(&\geq \zeta  \norm{u}^2_{\Hd}\big)
-\end{align} 
+\end{align*} 
 avec $\zeta = \frac{\xi}{(C^2+1)}$. Quand $\eta$ tend vers zéro on retrouve le resultat de la question 1. En considérant $V = \text{Vect}\big(\{\omega_I\}_{1,N})$, la matrice élements finis $\Am^{\eta}$ qu'on écrit donc
-\begin{equation}
+\[
   \Am^{\eta} = \K + \eta \M 
-\end{equation}
+\]
 avec
-\begin{align}
-  &\K \in \R^{N\times N},\quad \K_{IJ} = \int A \nabla \omega_I \nabla \omega_J,  \\
-  &\M \in \R^{N\times N},\quad \M_{IJ} = \int \omega_I \omega_J
-\end{align}
+\[
+  \K \in \R^{N\times N},\quad \K_{IJ} = \int A \nabla \omega_I \nabla \omega_J,  \\
+  \M \in \R^{N\times N},\quad \M_{IJ} = \int \omega_I \omega_J
+\]
 tend vers la matrice $\K$ quand $\eta$ tend vers $0$ avec une vitesse \emph{a priori} proportionelle à $\eta$.
 
-\question{3}{Montrer que $\quad\forall i \in \{1,2\}, \exists C>0 ~tq~ \norm{\omega_i-\omega_i^\eta}_{H^1} < C \eta$.}
-En sommant \autoref{eq:pbcell} et \autoref{eq:pbcelleta}, on a
-\begin{equation}
+Il nous faut maintenant prouver que le problème dégradé est équivalent au problème de cellule initale quand $\eta$ tend vers zéro. On va précisément démontrer
+que $\quad\forall i \in \{1,2\}, \exists C>0 ~tq~ \norm{\omega_i-\omega_i^\eta}_{H^1} < C \eta$.
+En sommant les équations des problèmes \autoref{pb:cell} et \autoref{pb:celleta}, on a
+\[
   \int_Y A \nabla \big(\omega_i-\omega_i^\eta\big) \nabla \phi = \eta \int_Y \omega_i^\eta \phi
-\end{equation}
-or $\omega_i-\omega_i^\eta\in\Hd$, donc on peut choisir $\phi=\omega_i-\omega_i^\eta$ :
-\begin{align}
+\]
+or $\omega_i-\omega_i^\eta\in V$, donc on peut choisir $\phi=\omega_i-\omega_i^\eta$ :
+\begin{align*}
   \int_Y A \big(\nabla \big(\omega_i-\omega_i^\eta\big)\big)^2
   &= \eta \int_Y \omega_i^\eta \big(\omega_i-\omega_i^\eta\big) \\
   \left| \int_Y A \nabla \big(\omega_i-\omega_i^\eta\big) \nabla \big(\omega_i-\omega_i^\eta\big) \right|
   &= \left| \eta \int_Y \omega_i^\eta \big(\omega_i-\omega_i^\eta\big) \right| && \text{valeur absolue} \\
   \xi \norm{\nabla \big(\omega_i-\omega_i^\eta \big)}_{L^2}^2
-  &\leq \eta \norm{\omega_i^\eta}_{L^2} \norm{\big(\omega_i-\omega_i^\eta \big)}_{L^2} && \text{Cauchy-Schwarz et $A$ $\xi$-coercitive} \\
-  \xi (D^2+1) \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1}^2 &\leq \eta \norm{\omega_i^\eta}_{H^1} \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1} && \text{Poincaré et }\norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
-  \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1} &\leq \eta \frac{\norm{\omega_i^\eta}_{H^1}}{\xi (D^2+1)}
-\end{align}
+  &\leq \eta \norm{\omega_i^\eta}_{L^2} \norm{\omega_i-\omega_i^\eta}_{L^2} && \text{Cauchy-Schwarz et $A$ $\xi$-coercitive} \\
+  \xi (D^2+1) \norm{\omega_i-\omega_i^\eta }_{H^1}^2 &\leq \eta \norm{\omega_i^\eta}_{H^1} \norm{\omega_i-\omega_i^\eta }_{H^1} && \text{Poincaré et }\norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd} \\
+  \norm{\omega_i-\omega_i^\eta }_{H^1} &\leq \eta \frac{\norm{\omega_i^\eta}_{H^1}}{\xi (D^2+1)}
+\end{align*}
 
-Si on borne $\eta$ par le haut, c'est à dire qu'on travaille sur un interval fini $I_\eta \subset  \R$, comme le problème est bien posé pour tous ces $\eta$, on pose
-\begin{equation}
-  \gamma = \sup_{\eta\in I_\eta}\norm{\omega_i^\eta}_{H^1}
-\end{equation}
-et on récupère 
-\begin{equation}
-  \norm{\big(\omega_i-\omega_i^\eta \big)}_{H^1} \leq C \eta 
-\end{equation}
-avec $C = \frac{\gamma}{\xi (D^2+1)}$.
+On peut montrer que $\norm{\omega_i^\eta}_{H^1}$ est majorée en prenant l'équation du problème \autoref{pb:celleta} avec $\phi=\omega_i^\eta$ :
+\begin{align*}
+  \left| \int_Y A \nabla \omega_i^\eta \nabla \omega_i^\eta  + \eta \int_Y \big(\omega_i^\eta\big)^2 \right|  = \left|\int_Y A e_i \nabla \omega_i^\eta\right| \\
+  \left| \int_Y A \nabla \omega_i^\eta \nabla \omega_i^\eta \right| \leq \left|\int_Y A e_i \nabla \omega_i^\eta\right| && \text{Car }\eta\int_Y \big(\omega_i^\eta\big)^2 \geq  0 \\
+  \xi \norm{\nabla \omega_i^\eta}_{L^2}^2 \leq \norm{A e_i}_{L^2} \norm{ \omega_i^\eta}_{L^2} && \text{Cauchy-Schwarz et $A$ $\xi$-coercitive} \\
+  (D^2+1) \xi \norm{\omega_i^\eta}_{H^1}^2 \leq \norm{A e_i}_{L^2}\norm{\omega_i^\eta}_{H^1} && \text{Poincaré et }\norm{\cdot}_{L^2}<\norm{\cdot}_{\Hd}\\
+  \norm{\omega_i^\eta}_{H^1} \leq \frac{1}{(D^2+1) \xi}\norm{A e_i}_{L^2}
+\end{align*}
+
 
 \subsection{Discrétisation des problèmes de cellule}
 
 \question{4}{Assembler la matrice EF}
 
 \question{5}{Calculer le second membre en se rappelant que $\nabla y_i=e_i$.}
-
 On peut réécrire le second membre avec cette nouvelle propriété
-\begin{align}
-  \int_Y \big(A(y)e_i, \nabla \phi\big) &= \int_Y \big(A(y)\nabla y_i, \nabla \phi\big) \\
-                                        &= a(y_i, \phi)
-\end{align}
-avec le $a$ défini comme pour l'\autoref{eq:pbcell}. On pourra donc reprendre la méthode la construction de $\K$ pour calculer les vecteurs second membre $L_i$ des équations discrétisées pour les différents problèmes de cellule
-\begin{equation}
-  (L_i)_j = a(y_i, \omega_j) \quad \forall j \in [1, N], \forall i \in \{1,2\}
-\end{equation}
+\[
+  \int_Y \big(A(y)e_i, \nabla \phi\big) = \int_Y \big(A(y)\nabla y_i, \nabla \phi\big) 
+                                        = a(y_i, \phi)
+\]
+avec le $a$ défini comme pour l'\autoref{eq:pbcell}. On pourra donc reprendre la matrice $\K$ pour calculer les vecteurs second membre $L_i$ des équations discrétisées pour les différents problèmes de cellule :
+\[
+  L_i = (y_i^T\K)^T \quad \forall i \in \{1,2\}.
+\]
 
 \subsection{Première validation}
 
 \question{7}{Trouver une solution exacte à \autoref{eq:pbcell} avec $A=Id$.}
 On a directement que
-\begin{align}
+\begin{align*}
   &\int_Y \big(\nabla \omega_i+e_i\big) \nabla \phi = 0  \\
   \iff&\int_{\partial Y} \big(\nabla \omega_i+e_i\big) \phi - \int_Y \nabla \big(\nabla \omega_i+e_i\big) \phi = 0 && \text{IPP} \\
   \iff&\int_Y \Delta \omega_i \phi = 0 && \int_{\partial Y}...=0\text{ car tout est périodique\footnote{Plus facile à voir en 1D mais marche aussi en 2D.}} \\
-  \iff & \Delta\omega_i = 0 &&\quad \forall i \in \{1,2\}
-\end{align}
-Pour résoudre cette équation on peut passer dans l'espace de Fourrier
-
+  \iff&\Delta\omega_i = 0 && \forall i \in \{1,2\}
+\end{align*}
+Pour résoudre cette équation on remarque la fonction nulle est solution. Or le problème \autoref{eq:pbcell} étant bien posé, la solution est unique, donc on a bien
+\[
+  \omega_i = 0, \quad \forall i \in\{1,2\}.
+\]
 
 \question{8}{De même pour
 $A = \left(\begin{matrix}
@@ -236,15 +349,52 @@ $A = \left(\begin{matrix}
   0 & 2 
 \end{matrix}\right)$.
 }
+En applicant le même processus que précedemment,
+\begin{align*}
+  &\int_Y \big(A(\nabla \omega_i+e_i)\big) \nabla \phi = 0  \\
+  \iff&\int_Y \nabla \big(A(\nabla \omega_i+e_i)\big) \phi = 0 \\
+  \iff&\int_Y \nabla \big(A(\nabla \omega_i)\big) \phi = 0 \qquad \forall \phi \in V\\
+  \iff&\nabla \big(A(\nabla \omega_i)\big)=0 \qquad \forall i \in \{1,2\}.
+\end{align*}
+Avec la bonne forme de $A$ on a 
+\[
+  \partial^2_{y_1} \omega_i + 2\partial^2_{y_2} \omega_i = 0 
+\]
+dont la fonction nulle est encore solution, et donc on a 
+$
+  \omega_i = 0~~\forall i \in\{1,2\}.
+$
 
-Vu la forme de $A$, on a immédiatement que  $\omega_1$ reste inchangé. En revanche, on retrouve aisément $\omega_2 = -2 y_2 +1$.
+\noindent
+\textbf{Remarque} : il en va de même de pour tout $A$ ne dépendant pas de $y$, car il faut que
+$
+  \nabla \omega_i = 0~~\forall i \in\{1,2\}
+$
+pour que l'\autoref{eq:Ah} donne $\Ah = A$.
 
-\message{ !name(rapport.tex) !offset(17) }
+\begin{equation}
+  \label{eq:Ah}
+  \Ah_{jk} = \int_Y \big(A(y)(e_k+\nabla \omega_k(y)), e_j+\nabla \omega_j(y)\big) dy \qquad \forall 1<i,j<2
+\end{equation}
 
+\question{9}{A l'aide de matrices déjà assemblées, calculer la matrice $\Ah$.}
+On peut en effet réutiliser la matrice de rigiditée précedemment constuite en remarquant que :
+\begin{align*}
+  \Ah_{jk} &= a(y_k+\omega_k, y_j+\omega_j) \\
+  \Ah_{jk} &= (Y_k + W_k)^T \K (Y_j + W_j) \qquad \forall 1<i,j<2
+\end{align*}
+avec pour tout sommet $S(j), \quad 1<j<N $
+\[
+  (Y_i)_j = S(j)_{y_i} 
+\]
+\[
+  (W_i)_j = \omega_i(S(j))
+\]
 \end{document}
-
 
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t
 %%% End:
+
+\message{ !name(rapport.tex) !offset(-400) }

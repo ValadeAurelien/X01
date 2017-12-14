@@ -1,4 +1,4 @@
-function val = f(x, y)
+function val = f(x, y, Atype)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % f :
 % Evaluation de la fonction second membre.
@@ -11,7 +11,7 @@ function val = f(x, y)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %A COMPLETER
-val = 1+sin(4*pi*x).*sin(2*pi*y); %ones(size(x));
+val = trace(A(x, y, Atype, -1))*pi^2.*sin(pi*x).*sin(pi*y); %ones(size(x));
 
 % $$$ if (Atype == 1)
 % $$$     val = 2*pi^2*sin(pi*x).*sin(pi*y);

@@ -25,27 +25,33 @@ for l=1:Nbtri
     end     
 end
 
-LL_1 = -(Coorneu(:, 1)' * KK)';
-LL_2 = -(Coorneu(:, 2)' * KK)';
-AA = KK+eta*MM;
-
 NbaretesNS = Nbaretes-4;
 PPmod = zeros(Nbpt, 1+NbaretesNS/2);
-for i=1:4
-    PPmod(i, 1) = 1;
+% On fait les 4 angles sur la même colonne
+for i=1:4 
+    PPmod(i, 1) = 1/4.;
 end
+% On fait les bords haut / bas
 for i=1:(NbaretesNS)/4
-    PPmod(4+i, 1+i) = 1;
-    PPmod(4+3*NbaretesNS/4-i+1, 1+i) = 1;
+    PPmod(4+i, 1+i) = 1/2.;
+    PPmod(4+3*NbaretesNS/4-i+1, 1+i) = 1/2.;
 end
+% On fait les bordes droite / gauche
 for i=1:(NbaretesNS)/4
-    PPmod(4+NbaretesNS/4+i, 1+NbaretesNS/4+i) = 1;
-    PPmod(4+NbaretesNS-i+1, 1+NbaretesNS/4+i) = 1;
+    PPmod(4+NbaretesNS/4+i, 1+NbaretesNS/4+i) = 1/2.;
+    PPmod(4+NbaretesNS-i+1, 1+NbaretesNS/4+i) = 1/2.;
 end
-
+% On concatene avec les noeuds du centre 
 PPcentre = vertcat(zeros(Nbaretes, Nbpt-Nbaretes), ...
                   eye(Nbpt-Nbaretes));
 PP = [PPmod PPcentre];
+PP = sparse(PP);
+
+LL_1 = - KK * Coorneu(:, 1);%-(Coorneu(:, 1)' * KK)';
+LL_2 = - KK * Coorneu(:, 2);%-(Coorneu(:, 2)' * KK)';
+
+AA = KK+eta*MM;
+
 AAp = PP'*AA*PP;
 LLp_1 = PP'*LL_1;
 LLp_2 = PP'*LL_2;
@@ -56,14 +62,16 @@ Wp_2 = AAp\LLp_2;
 W_1 = PP*Wp_1;
 W_2 = PP*Wp_2;
 Ws = [W_1 W_2];
-% $$$ affiche(W_1, Numtri, Coorneu, 'test');
-% $$$ affiche(W_2, Numtri, Coorneu, 'test 2');
+% $$$ plot(Coorneu(:, 1), W_1, '.');
+affiche(W_1, Numtri, Coorneu, 'test');
+affiche(W_2, Numtri, Coorneu, 'test 2');
 % $$$ disp([max(abs(W_1)), max(abs(W_2))]);
 
-Ah = zeros(2);
-for i=1:2
-    for j=1:2
-        Ah(i, j) = ( Coorneu(:,i) + Ws(:,i) )' * KK * ...
-            ( Coorneu(:,j) + Ws(:,j) );
-    end
-end
+Ah = (Coorneu + Ws)' * KK * (Coorneu + Ws);
+% $$$ Ah = zeros(2);
+% $$$ for i=1:2
+% $$$     for j=1:2
+% $$$         Ah(j, i) = ( Coorneu(:,i) + Ws(:,i) )' * KK * ...
+% $$$             ( Coorneu(:,j) + Ws(:,j) );
+% $$$     end
+% $$$ end

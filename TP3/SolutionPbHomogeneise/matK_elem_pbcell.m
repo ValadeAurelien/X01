@@ -6,9 +6,11 @@ x2 = S2(1); y2 = S2(2);
 x3 = S3(1); y3 = S3(2);
 
 % Transformation F_l du triangle de reference vers le triangle physique
-F_l = @(xref,yref) [(x2-x1)*xref + (x3-x1)*yref + x1 , (y2-y1)*xref + (y3-y1)*yref + y1];
+F_l = @(xref,yref) [(x2-x1)*xref + (x3-x1)*yref + x1, 
+                    (y2-y1)*xref + (y3-y1)*yref + y1];
 % Jacobienne de F_l
-Jacobian = [ x2-x1 , x3-x1 ; y2-y1 , y3-y1];
+Jacobian = [ x2-x1 , x3-x1 ; 
+             y2-y1 , y3-y1];
 
 % coordonees des points pour la quadrature sur le triangle physique
 X1q = F_l(1/3,1/3);
@@ -32,7 +34,8 @@ norm_ref = [-1,-1;1,0;0,1];
 Kel = zeros(3,3);
 for i=1:3
   for j=1:3
-    Kel(i,j) = (     (  A_quad*inv(Jacobian')*(norm_ref(i,:))'  )' * (inv(Jacobian')*norm_ref(j,:)') ) * abs(det(Jacobian));
+    Kel(i,j) = ( A_quad*inv(Jacobian')*(norm_ref(i,:))' )' * ...
+        ( inv(Jacobian')*norm_ref(j,:)' ) * abs(det(Jacobian));
   end; % j
 end; % i
 
