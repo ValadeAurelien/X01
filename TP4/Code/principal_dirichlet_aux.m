@@ -1,6 +1,6 @@
 function [UU, MM, KK] = principal_dirichlet_aux(h, namemsh, micro_namemsh, ...
                                                 macro_Atype, macro_epsilon, ...
-                                                Atype, epsilon, eta)
+                                                Atype, epsilon)
 % =====================================================
 %
 %
@@ -29,21 +29,19 @@ function [UU, MM, KK] = principal_dirichlet_aux(h, namemsh, micro_namemsh, ...
 KK = sparse(Nbpt,Nbpt); % matrice de rigidite
 MM = sparse(Nbpt,Nbpt); % matrice de masse
 LL = zeros(Nbpt,1);     % vecteur second membre
+AllKel = zeros(Nbtri, 9);
+AllMel = zeros(Nbtri, 9);
 
 %%% calculs à ne faire qu'une fois pour le micro maillage %%%
 micro_PP = calc_constr_mat(micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
                            micro_Numtri, micro_Nbaretes);
-
-
-
-
 % $$$ disp(sprintf('Ah11 %.10f', Ah(1, 1)));
 % $$$ disp(Ah);
 % boucle sur les triangles
 % ------------------------
-for l=1:Nbtri
-    disp(sprintf('\r%i /  %i (%.1f %%)             ', l, Nbtri, floor(l/Nbtri*1000)/10));
-   % Coordonnees des sommets du triangles
+parfor_progress(Nbtri);
+parfor l=1:Nbtri;
+    % Coordonnees des sommets du triangles
     % A COMPLETER
     S1=Coorneu(Numtri(l, 1), :);
     S2=Coorneu(Numtri(l, 2), :);
@@ -55,8 +53,21 @@ for l=1:Nbtri
                   micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
                   micro_Numtri, micro_Nbaretes, micro_PP);
     Mel=matM_elem(S1, S2, S3);
-    % On fait l'assemblage de la matrice globale et du second membre
-    % A COMPLETER
+    AllKel(l, :) = [Kel(1, :) Kel(2, :) Kel(2, :)];
+    AllMel(l, :) = [Mel(1, :) Mel(2, :) Mel(3, :)];
+    parfor_progress;
+
+end % for l
+
+for l=1:Nbtri
+    % On fait l'assemblage de la matrice globale et du second
+    % membre
+    Kel = [ AllKel(l, 1:3) ;
+            AllKel(l, 4:6) ;
+            AllKel(l, 7:9) ];
+    Mel = [ AllMel(l, 1:3) ;
+            AllMel(l, 4:6) ;
+            AllMel(l, 7:9) ];
     for i=1:3
         I = Numtri(l, i);
         for j=1:3
@@ -65,8 +76,7 @@ for l=1:Nbtri
             KK(I, J) = KK(I, J) + Kel(i, j);
         end
     end     
-end % for l
-
+end
 % Calcul du second membre L et AA
 % -------------------------------
 FF = f(Coorneu(:,1), Coorneu(:,2), macro_Atype);
