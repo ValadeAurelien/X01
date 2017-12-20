@@ -36,11 +36,12 @@ namemshs_pbcell = {'geoms_per/geomCarre1.msh', 'geoms_per/geomCarre2.msh', 'geom
 
 %%% BAC A SABLE %%%
 if (bac_a_sable)
-   [UU, ~, ~] =  principal_dirichlet_aux(hs(msh), namemshs{msh}, namemshs_pbcell{msh_pbcell}, ...
-                            macro_Atype, macro_epsilon, ...
-                            Atype, epsilon);
+    [Nbpt,Nbtri,Coorneu,Refneu,Numtri,Reftri,Nbaretes,Numaretes,Refaretes]=lecture_msh(namemshs{msh});
+    [UU, ~, ~] =  principal_dirichlet_aux(hs(msh), namemshs{msh}, namemshs_pbcell{msh_pbcell}, ...
+                                          macro_Atype, macro_epsilon, ...
+                                          Atype, epsilon);
     affiche(UU, Numtri, Coorneu, 'test');
-%%% PREMIÈRE EXPÉRIENCE %%%
+    %%% PREMIÈRE EXPÉRIENCE %%%
 elseif (vareps)
     disp(sprintf('Solution homogène'));
     [UUh, MMh, KKh] = ...
