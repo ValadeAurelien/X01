@@ -1,4 +1,5 @@
-function PP = calc_constr_mat(Nbpt, Nbtri, Coorneu, Numtri, Nbaretes)
+function PP = calc_constr_mat(Nbpt, Nbtri, Coorneu, Numtri, Nbaretes, ...
+                              epsilon)
 
 PP = zeros(Nbpt, 1+Nbaretes/2);
 MM = sparse(Nbpt,Nbpt); 
@@ -22,7 +23,7 @@ for i=1:NbaretesNC/4
     PP(4+NbaretesNC/4+i, 3+NbaretesNC/4+i) = 1;
     PP(4+NbaretesNC-i+1, 3+NbaretesNC/4+i) = -1;
 end
-% On concatene avec les noeuds du centre 
+
 
 for l=1:Nbtri
     S1=Coorneu(Numtri(l, 1), :);

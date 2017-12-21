@@ -223,12 +223,16 @@ On aurait a priori envie d'associer directement la micro-échelle à la taille d
 micro-maillage. Cependant la méthode proposée est un peu différente. On va choisir dans macro-cellule un ensemble de points pour faire une quadrature.
 Sont proposées deux quadratures :
 \begin{itemize}
-\item une quadrature avec un unique point au centre de la cellule
+\item une quadrature avec un unique point au centre de la macro cellule
 \item une quadrature de Legendre à deux points en chaque direction de l'espace, on aura donc 4 points en $\{(1/2 \pm \sqrt{3}/6,~1/2 \pm \sqrt{3}/6)\}$
   en considérant une maille centrée en $(0, 0)$,
 \end{itemize}
 auxquelles on pourrait ajouter d'autres quadratures d'ordre plus élevé par exemple. On va considérer dans la suite que l'on travaille dans le cas de la
-quadrature à quatres points. 
+quadrature à quatres points.
+
+\begin{rmq}
+  Nous allons dans notre code reprendre la quadrature à quatre points proposée dans le TP1.
+\end{rmq}
 
 Autour de chaque point de cette quadrature on forme un carré de côté $\delta \ll H$. C'est sur ces espaces que l'on va résoudre les problèmes de
 cellules, et c'est cette échelle que nous appelont micro-échelle.

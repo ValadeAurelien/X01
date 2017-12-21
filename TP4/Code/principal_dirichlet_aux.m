@@ -1,6 +1,6 @@
 function [UU, MM, KK] = principal_dirichlet_aux(h, namemsh, micro_namemsh, ...
                                                 macro_Atype, macro_epsilon, ...
-                                                Atype, epsilon)
+                                                Atype, epsilon, fourpointsKquad)
 % =====================================================
 %
 %
@@ -32,15 +32,19 @@ LL = zeros(Nbpt,1);     % vecteur second membre
 AllKel = zeros(Nbtri, 9);
 AllMel = zeros(Nbtri, 9);
 
+%%% recentrage du maillage %%%
+micro_Coorneu = 1/epsilon * ( micro_Coorneu - ...
+                              ( repmat(micro_Coorneu(1, :), micro_Nbpt, 1) + ...
+                                repmat(micro_Coorneu(3, :), micro_Nbpt, 1) ) / 2 );
 %%% calculs à ne faire qu'une fois pour le micro maillage %%%
 micro_PP = calc_constr_mat(micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
-                           micro_Numtri, micro_Nbaretes);
+                           micro_Numtri, micro_Nbaretes, epsilon);
 % $$$ disp(sprintf('Ah11 %.10f', Ah(1, 1)));
 % $$$ disp(Ah);
 % boucle sur les triangles
 % ------------------------
 parfor_progress(Nbtri);
-parfor l=1:Nbtri;
+for l=1:Nbtri
     % Coordonnees des sommets du triangles
     % A COMPLETER
     S1=Coorneu(Numtri(l, 1), :);
@@ -49,14 +53,13 @@ parfor l=1:Nbtri;
     % calcul des matrices elementaires du triangle l 
     
     Kel=matK_elem(S1, S2, S3, ...
-                  macro_Atype, Atype, macro_epsilon, epsilon, ...
+                  Atype, epsilon, macro_Atype, macro_epsilon, ...
                   micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
-                  micro_Numtri, micro_Nbaretes, micro_PP);
+                  micro_Numtri, micro_Nbaretes, micro_PP, fourpointsKquad);
     Mel=matM_elem(S1, S2, S3);
     AllKel(l, :) = [Kel(1, :) Kel(2, :) Kel(2, :)];
     AllMel(l, :) = [Mel(1, :) Mel(2, :) Mel(3, :)];
     parfor_progress;
-
 end % for l
 
 for l=1:Nbtri
@@ -83,6 +86,7 @@ FF = f(Coorneu(:,1), Coorneu(:,2), macro_Atype);
 LL = MM*FF;
 AA = KK;
 
+norm(KK, 'fro')
 %%% MATRICE DE CHANGEMENT DE BASE %%%
 PP = sparse(horzcat(zeros(Nbpt-Nbaretes, Nbaretes), eye(Nbpt-Nbaretes, Nbpt-Nbaretes)));
 AA0 = PP*AA*PP';
