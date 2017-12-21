@@ -6,6 +6,7 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{mathtools}
+\usepackage{bm}
 
 \newtheorem{pb}{Problème}
 \newtheorem{rmq}{Remarque}
@@ -31,13 +32,18 @@
 \newcommand{\C}{\mathbb{C}}
 \renewcommand{\P}{\mathbb{P}}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\K}{\mathbb{K}}
 \newcommand{\M}{\mathbb{M}}
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\tD}{\widetilde{\mathbb{D}}}
+\newcommand{\J}{\mathbb{J}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\Kk}{\mathbb{K}^k}
+\newcommand{\Ktk}{\mathbb{K}^{T,k}}
+\newcommand{\Ktkc}{\mathbb{K}^{T, k}_c}
 \newcommand{\T}{\mathcal{T}}
 \newcommand{\Ah}{A^{hom}}
 \newcommand{\uh}{u^{hom}}
 \newcommand{\bx}{\bar{x}}
-\newcommand{\teta}{\tilde{\eta}}
 \newcommand{\tphi}{\tilde{\phi}}
 \newcommand{\Ye}{Y_\varepsilon}
 \newcommand{\tw}{\tilde{w}}
@@ -52,6 +58,16 @@
 \newcommand{\question}[2]{\paragraph{Question #1.}\textit{#2} \\}
 \newcommand{\Hd}{H^1_{\#}}
 \newcommand{\td}{\text{d}}
+\newcommand{\balpha}{\bm{\alpha}}
+\newcommand{\bbeta}{\bm{\beta}}
+\newcommand{\blambda}{\bm{\lambda}}
+\newcommand{\balphac}{\bm{\alpha}_c}
+\newcommand{\bbetac}{\bm{\beta}_c}
+\newcommand{\bpsi}{\bm{\psi}}
+\newcommand{\xtk}{x_{T,k}}
+
+
+
 
 
 \title{Rapport TP X01 \\ TP4}
@@ -69,7 +85,7 @@ en une analyse du papier de \cite{abdulle2009short}, puis une tentative de ré-i
 dans les TP précédents. Contrairement au papier qui présente des méthodes pour différents types de maillage en deux ou trois dimensions, nous nous
 bornerons à des explications en deux dimensions avec des maillages de simplexes, c'est à dire triangulaires dans notre cas. 
 
-\section{Analyse du papier}
+\section{Analyse du papier \& méthodologie du code}
 
 Ce papier a pour but l'implémentation d'un code MATLAB simple et multifonctions à mettre à disposition du publique. Celui ci permettrait la résolution
 d'EDP dont la physique amène à considérer des phénomènes physiques couplés sur plusieurs échelles d'espaces distinctes. Pour la résolution de tels
@@ -231,15 +247,31 @@ auxquelles on pourrait ajouter d'autres quadratures d'ordre plus élevé par exe
 quadrature à quatres points.
 
 \begin{rmq}
-  Nous allons dans notre code reprendre la quadrature à quatre points proposée dans le TP1.
+  Nous allons dans notre code reprendre la quadrature à quatre points proposée dans le TP1 à la place de la quadrature de Gausse-Legendre.
 \end{rmq}
 
 Autour de chaque point de cette quadrature on forme un carré de côté $\delta \ll H$. C'est sur ces espaces que l'on va résoudre les problèmes de
 cellules, et c'est cette échelle que nous appelont micro-échelle.
 
+\begin{rmq}
+  On utilise dans la suite des micro-maillages de côté $\delta = \varepsilon$, ce qui amène d'après le papier à un code robuste et indépendant de
+  $\varepsilon$. 
+\end{rmq}
 
 
-\question{1}{Mq \autoref{eq:Ahom} peut se réécrire sous la forme de \autoref{eq:AhomYeps}}
+\subsection{Modification analytique des problèmes de cellule}
+
+Le problèmes de cellule sur lesquels on travaille sont des problèmes modifiés qui permettent, comme précisé précédemment, de ne pas calculer $\Ah$ mais
+directement la matrice de rigidité à partir des données initiales. Les calculs suivant démontrent comment, en partant des équations vues en cours, on
+peut retrouver les problèmes de cellule modifiés qui seront résolus dans le code.
+
+\begin{rmq}
+  Ces problèmes sont au nombre de sommets par cellule. Comme on utilise uniquement des simplexes de dimention deux, on aura donc trois problèmes
+  modifiés par macro-cellule. Pour faire l'analogie avec les codes vus dans les TP précédents, ces problèmes permettent en réalité de contruire
+  directement les matrices élémentaires \texttt{Kel} de la matrice de rigidité.
+\end{rmq}
+
+On veut montre d'abord que l'\autoref{eq:Ahom} peut se réécrire sous la forme de l'\autoref{eq:AhomYeps}:
 
 \begin{equation}
   \label{eq:AhomYeps}
@@ -259,25 +291,16 @@ On procède par changement de variable : $ y \rightarrow x/\varepsilon $ et en f
 \end{itemize}
 la réécriture est immédiate.
 
-\question{2}{Second changement de variable}
-Après second changement de variable $x\rightarrow x +\bx$ on travaille avec les nouvelles fonctions $\teta_i = \varepsilon w_i(\bx, (x-\bx)/\varepsilon)$.
-On voudrait montrer que ces nouvelles fonctions résolvent le problème \autoref{eq:pbcelleta}
-
+On veut ensuite montrer que le problème de cellule est ``translatable'', c'est à dire que l'on peut travailler autour d'un point quelconque
+$\bx$. Cela est direct si on remarque quela fonction étant périodique et l'interval d'integration étant précisément un interval de périodicité de la
+fonction, la translation de ce dernier n'influe pas sur l'intégrale :
 \begin{equation}
-  \label{eq:pbcellteta}
-  \int_{\Ye(\bx)} A(\bx, x/\varepsilon)\nabla_x \teta_i(\bx, x/\varepsilon) \nabla_x \phi(x) dx =
+  \label{eq:pbcelletat}
+  \int_{\Ye(\bx)} A(\bx, x/\varepsilon)\nabla_x \eta_i(\bx, x/\varepsilon) \nabla_x \phi(x) dx =
   - \int_{\Ye(\bx)} A(\bx, x/\varepsilon) e_i \nabla_x \phi(x) dx
 \end{equation}
-pour cela, on peut résonner par équivalence en faisant le chemin inverse en faisant les changements de variables inverses
-\begin{enumerate}
-\item $x\rightarrow x+\bx$
-\item $x\rightarrow \varepsilon x$
-\end{enumerate}
-\begin{rmq}
-  Par des arguments de pseudo périodicité on peut montrer que le premier changement de variable ne change pas $A(x, x/\varepsilon)$.
-\end{rmq}
 
-On retrouve alors l'équation sur $Y$ avec les $w_i$ :
+On retrouve alors l'équation sur $Y$ avec les $w_i$ des problèmes de cellule :
 \[
     \int_{Y} A(y)\nabla_y w_i(y) \nabla_y \phi(\bx+\varepsilon y) dy =
   - \int_{Y} A(y) e_i \nabla_y \phi(\bx+\varepsilon y) dy \qquad \forall i \in \{1, 2\}, \forall \phi\in V_\varepsilon(\Ye)
@@ -288,15 +311,17 @@ mais on voudrait montrer cette égalité $\forall \tphi \in V$, ce qui est équi
   \forall \tphi \in V, \exists \phi \in V_\varepsilon(\Ye) \quad \text{tq} \quad \tphi(x) =
   \phi(\bx+\varepsilon y) \text{ en tout points associés } x \rightarrow y
 \]
-or l'\autoref{eq:pbcellteta} étant vraie $\forall \phi \in V_\varepsilon(\Ye)$, on peut bien écrire 
+or l'\autoref{eq:pbcelletat} étant vraie $\forall \phi \in V_\varepsilon(\Ye)$, on peut bien écrire 
 
 \begin{equation}
   \int_{Y} A(y)\nabla_y w_i(y) \nabla_y \phi(y) dy =
-  - \int_{Y} A(y) e_i \nabla_y \phi(y) dy \qquad \forall i \in \{1, 2\}, \forall \phi\in V
+  - \int_{Y} A(y) e_i \nabla_y \phi(y) dy \qquad \forall i \in \{1, 2\}, \forall \phi\in V.
 \end{equation}
 
-\question{3}{Écrire la formulation discrète intégrale}
-Pour alléger le calcul suivant, on pose les conventions d'écriture suivantes
+Le but de la méthode étant d'éviter le calcul intermédiaire de $\Ah$, on va écrire analytiquement les coefficients de $\K$ qui nous
+intéressent. Ainsi, es prochaines équations construisent la contribution d'un simplexe à un coefficients $\K_{IJ}$ représentant le recouvrement entre
+deux éléments de la base globale appartenant noté dans la base locale $w_i$ et $w_j$, $i,j\in [1,3]$. Pour alléger le calcul, on pose les conventions
+d'écriture suivantes
 \begin{itemize}
 \item
   $ 
@@ -312,13 +337,13 @@ Pour alléger le calcul suivant, on pose les conventions d'écriture suivantes
   $
   B = \left(
     \begin{matrix}
-      1+\partial_1 \teta_1 &   \partial_1 \teta_2 \\
-        \partial_2 \teta_1 & 1+\partial_2 \teta_2
+      1+\partial_1 \eta_1 &   \partial_1 \eta_2 \\
+        \partial_2 \eta_1 & 1+\partial_2 \eta_2
     \end{matrix}
   \right)
   = \left(
     \begin{matrix}
-      e_1 + \nabla_x \teta_1 & e_2 + \nabla_x \teta_2
+      e_1 + \nabla_x \eta_1 & e_2 + \nabla_x \eta_2
     \end{matrix}
   \right)
   = \left(
@@ -326,11 +351,10 @@ Pour alléger le calcul suivant, on pose les conventions d'écriture suivantes
       B_1 & B_2
     \end{matrix}
   \right)
-  = I + \nabla_x \teta
+  = I + \nabla_x \eta
   $
 \end{itemize}
-et on ne note pas les arguments des fonctions.
-Commençons par écrire $\Ah\nabla_x w_j$ :
+et on ne note pas les arguments des fonctions. Commençons par écrire $\Ah\nabla_x w_j$ :
 \begin{equation}
   \begin{aligned}
     \Ah\nabla_x w_j &=
@@ -360,77 +384,236 @@ on peut maintenant multiplier par la droite
   \begin{aligned}
     \Ah\nabla_x w_j \nabla_x w_i =(\Ah_{11} \partial_1& w_i + \Ah_{12} \partial_2 w_i) \partial_1 w_i
     + (\Ah_{21} \partial_1 w_i + \Ah_{22} \partial_2 w_i ) \partial_2 w_i \\
-    = \frac{1}{|\Ye|} \int_{\Ye} &A(e_1 + \nabla_x \teta_1)\cdot(e_1 + \nabla_x \teta_1) \partial_1 w_j \partial_1 w_i + \\
-    &A(e_2 + \nabla_x \teta_2)\cdot(e_1 + \nabla_x \teta_1) \partial_2 w_j \partial_1 w_i +\\ 
-    &A(e_1 + \nabla_x \teta_1)\cdot(e_2 + \nabla_x \teta_2) \partial_1 w_j \partial_2 w_i +\\
-    &A(e_2 + \nabla_x \teta_2)\cdot(e_2 + \nabla_x \teta_2) \partial_2 w_j \partial_2 w_i  \\
+    = \frac{1}{|\Ye|} \int_{\Ye} &A(e_1 + \nabla_x \eta_1)\cdot(e_1 + \nabla_x \eta_1) \partial_1 w_j \partial_1 w_i + \\
+    &A(e_2 + \nabla_x \eta_2)\cdot(e_1 + \nabla_x \eta_1) \partial_2 w_j \partial_1 w_i +\\ 
+    &A(e_1 + \nabla_x \eta_1)\cdot(e_2 + \nabla_x \eta_2) \partial_1 w_j \partial_2 w_i +\\
+    &A(e_2 + \nabla_x \eta_2)\cdot(e_2 + \nabla_x \eta_2) \partial_2 w_j \partial_2 w_i  \\
     = \frac{1}{|\Ye|} \int_{\Ye} &A B_1 \partial_1 w_j \cdot B_1 \partial_1 w_i + A B_2 \partial_2 w_j \cdot B_1 \partial_1 w_i +\\ 
     &A B_1 \partial_1 w_j \cdot B_2 \partial_2 w_i + A B_2 \partial_2 w_j \cdot B_2 \partial_2 w_i \big] \\
     = \frac{1}{|\Ye|} \int_{\Ye} &A (B_1 \partial_1 w_j + B_2 \partial_2 w_j ) \cdot B_1 \partial_1 w_i + \\
     &A (B_1 \partial_1 w_j  + B_2 \partial_2 w_j )\cdot B_2 \partial_2 w_i +\\
     = \frac{1}{|\Ye|} \int_{\Ye} &A  B\nabla_x w_j \cdot B\nabla_x w_i  \\
-    = \frac{1}{|\Ye|} \int_{\Ye} &A(I + \nabla_x \teta) \nabla_x w_j (I + \nabla_x \teta) \nabla_x w_i
+    = \frac{1}{|\Ye|} \int_{\Ye} &A(I + \nabla_x \eta) \nabla_x w_j (I + \nabla_x \eta) \nabla_x w_i
   \end{aligned}
 \end{equation}
-cette équation appliquée aux points corrects donne
+cette équation appliquée aux points corrects donne $\forall i,j\in [1,3]$
 \begin{equation*}
   \begin{aligned}
-    \Ah\nabla_x w_j \nabla_x w_i = \frac{1}{|\Ye(x_{T, k})|} \int_{\Ye(x_{T, k})} A(x_{T, k}, x/\varepsilon)&(I + \nabla_x \teta(x_{T, k},
+    \Ah\nabla_x w_j \nabla_x w_i = \frac{1}{|\Ye(x_{T, k})|} \int_{\Ye(x_{T, k})} A(x_{T, k}, x/\varepsilon)&(I + \nabla_x \eta(x_{T, k},
     x/\varepsilon)) \nabla_x w_j(x_{T, k}) \\
-    &(I + \nabla_x \teta(x_{T, k}, x/\varepsilon)) \nabla_x w_i(x_{T, k})
+    &(I + \nabla_x \eta(x_{T, k}, x/\varepsilon)) \nabla_x w_i(x_{T, k})
   \end{aligned}
 \end{equation*}
 
-\question{5}{Pb cell sur le dernier $\tw$}
-
-En passant le membre de droite dans l'\autoref{eq:pbcellteta}, on retrouve
+On veut enfin écrire le problème modifié dans la forme définitive ou apparaît le couplage en fonctions de la micro-base et celles de la macro-base.
+En passant le membre de droite dans l'\autoref{eq:pbcelletat}, on retrouve
 \begin{equation}
   \begin{aligned}
-    &\int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)(e_i + \nabla_x \teta_i(x_{T,k}, x/\varepsilon)) \nabla_x \phi(x) dx = 0 \\
-    \iff &\int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_i \nabla_x \phi(x) dx = 0 \\
+    &\int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)(e_i + \nabla_x \eta_i(\xtk, x/\varepsilon)) \nabla_x \phi(x) dx = 0 \\
+    \iff &\int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)B_i \nabla_x \phi(x) dx = 0 \\
   \end{aligned}
 \end{equation}
-on peut donc écrire les couples d'équations scalaires $\forall i,l \in \{1,2\}$ 
+on peut donc écrire les couples d'équations scalaires $\forall i\in \{1,2\}$, avec $l\in [1, 3]$.
 \begin{equation}
   \begin{aligned}
     &\begin{cases}
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_1 dx = 0 \\
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_2 dx = 0 \\ 
-    \end{cases}   \\                     
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon) B_1(\xtk, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_1 dx = 0 \qquad i = 1 \\
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon) B_2(\xtk, x/\varepsilon) \nabla_x \phi(x) (\nabla w_l)_2 dx = 0 \qquad i = 2 \\ 
+    \end{cases}  \\                     
     \iff &\begin{cases}                          
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) (\nabla w_l)_1 \nabla_x \phi(x) dx = 0 \\
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_i(x_{T,k}, x/\varepsilon) (\nabla w_l)_2 \nabla_x \phi(x) dx = 0 \\ 
-    \end{cases}
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon) B_1(\xtk, x/\varepsilon) (\nabla w_l)_1 \nabla_x \phi(x) dx = 0 \qquad i = 1 \\
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon) B_2(\xtk, x/\varepsilon) (\nabla w_l)_2 \nabla_x \phi(x) dx = 0 \qquad i = 2 \\ 
+    \end{cases} 
   \end{aligned}
 \end{equation}
-avec une disjonction de cas on trouve
-\begin{equation}
-  \begin{aligned}
-    &\begin{cases}
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_1(x_{T,k}, x/\varepsilon) (\nabla w_1)_1 \nabla_x \phi(x) dx = 0 \\
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon) B_2(x_{T,k}, x/\varepsilon) (\nabla w_1)_2 \nabla_x \phi(x) dx = 0 \\
-    \end{cases} && l=1\\
-    \text{et}~~ &\begin{cases}
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_1(x_{T,k}, x/\varepsilon) (\nabla w_2)_1 \nabla_x \phi(x) dx = 0 \\
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B_2(x_{T,k}, x/\varepsilon) (\nabla w_2)_2 \nabla_x \phi(x) dx = 0 \\ 
-    \end{cases} && l=2\\
-    \iff &\begin{cases}
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_1 \nabla_x \phi(x) dx = 0 \\
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)B(x_{T,k}, x/\varepsilon) \nabla w_2 \nabla_x \phi(x) dx = 0 \\ 
-    \end{cases} \\
-    \iff &\begin{cases}
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_1(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\
-      \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_2(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\ 
-    \end{cases}
-  \end{aligned}
-\end{equation}
+
 d'où 
 \begin{equation}
   \label{eq:pbcelltw}
-  \int_{\Ye(x_{T,k})} A(x_{T,k}, x/\varepsilon)\nabla_x \tw_l(x_{T,k}, x/\varepsilon) \nabla_x \phi(x) dx = 0 \quad \forall l \in \{1,2\}\\
-\end{equation}                                       
+  \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)\nabla_x \tw_l(\xtk, x/\varepsilon) \nabla_x \phi(x) dx = 0 \quad \forall l \in [1, 3]\\
+\end{equation}
+avec
+\[
+  \nabla_x \tw_l(\xtk, x/\varepsilon) = B(\xtk, x/\varepsilon) \nabla_x w_l(\xtk).
+\]
+
+Il est important de noter qu'il ne s'agit plus de résoudre un problème hyperbollique comme jusqu'à présent, puisqu'une contrainte supplémentaire est
+imposée :
+\[
+  \tw_l \in w_{l, lin} + \Hd(\Ye).
+\]
+\begin{rmq}
+  Cette contrainte est importante, sans elle le problème serait mal posé, la fonction nulle étant une alternative à celle recherchée.
+\end{rmq}
+
+\subsection{Résolution numérique des nouveaux problèmes de cellule}
+
+\subsubsection{Système contraint}
+
+
+En suivant les récommandation du papier, on va donc changer le système à résoudre en passant par une méthode lagrangienne. Cette nouvelle formulation
+devra donc prendre en compte les deux contraintes en présence :
+\begin{itemize}
+\item La périodicité des problèmes de cellule modifiés
+\item La contrainte sur l'espace de définition de la solution.
+\end{itemize}
+Discrétisons nos espaces,  soient
+\begin{itemize}
+\item $\{\psi_i\}_{M_{mic}}$ la micro-base \ie la base de $\Ye(\xtk)$ 
+\item  $\{\varphi_i\}_{1,2,3}$ la macro-base \textbf{locale}.
+\end{itemize}
+On projette sur la micro-base :
+\begin{itemize}
+\item $\tw_l = \sum \alpha^i_l \psi_i = \balpha_l \cdot \bpsi$ \quad les solutions aux problèmes de cellule modifiés,
+\item $\varphi_l = \sum \beta^i_l \psi_i = \bbeta_l \cdot \bpsi$ \quad les éléments de la base locale.
+\end{itemize}
+Les inconnues sont maintenant les vecteurs $\balpha_l$, le reste étant connu ou aisément calculable.
+\begin{rmq}
+  On rappelle qu'il y a donc trois vecteurs inconnus par points de quadrature, bien qu'on ne surcharge pas la notation avec un indice $k$ sur les
+  $\balpha_l$.
+\end{rmq}
+On va poser la matrice $\D$ qui
+regroupera nos contraintes, et on se donne la matrice de rigidité locale $\Ktk$ calculée de manière classique sur l'intervale $\Ye(\xtk)$. On va
+chercher à résoudre les systèmes
+\begin{equation}
+  \label{eq:sysconst}
+  \begin{cases}
+    \Ktk \balpha_l + \D \blambda_l = 0 \\
+    \D^t(\balpha_l - \bbeta_l) = 0 
+  \end{cases} \qquad \forall l \in [1, 3]
+\end{equation}
+où $\blambda_l \in \R^C$ est un multiplicateur de lagrange et $C$ le nombre de contraintes. On va réécrire ces systèmes en un seul où les
+solutions sont concaténées
+\begin{equation}
+  \Ktkc \balphac = \bbetac
+\end{equation}
+avec
+\[
+  \Ktkc = \left(
+    \begin{tabular}{ccc|c}
+      ~ & ~     & ~ & ~      \\
+      ~ & $\Ktk$ & ~ & $\D$ \\
+      ~ & ~     & ~ & ~      \\
+      \hline
+      ~ & $\D^t$  & ~ & 0
+    \end{tabular}
+  \right)
+  ~,\qquad
+  \balphac = \left(
+    \begin{matrix}
+      ~         & ~         & ~         \\
+      \balpha_1 & \balpha_2 & \balpha_3 \\
+      ~         & ~         & ~         \\
+      \blambda_1 & \blambda_2 & \blambda_3
+    \end{matrix}
+  \right)
+  ~,\qquad
+    \bbetac = \left(
+    \begin{matrix}
+      ~          & ~          & ~ \\
+      0          & 0          & 0 \\
+      ~          & ~          & ~ \\
+      \D^t\bbeta_1 & \D^t\bbeta_2 & \D^t\bbeta_3  
+    \end{matrix}
+  \right).
+\]
+
+Cela revient bien sûr à résoudre les trois systèmes séparément, mais la concaténation est utile dans la suite et simplifie l'écriture. En effet, une
+fois ce système résolu, on peut directement calculer la contribution de la cellule $k$ à la matrice de rigidité globale
+\[
+  \Kk = \sum_{\xtk} \frac{\omega_{\xtk}}{\varepsilon} (\J\balphac)^t \Ktk (\J\balphac)
+  \quad \text{avec} \quad
+  \J = \left(
+    \begin{matrix}
+      I_{M_{mic}} & 0 \\
+      0           & 0
+    \end{matrix}
+  \right).
+\]
+
+
+\subsubsection{Matrice de contrainte}
+
+La matrice de contrainte est le point dur de la construction du système contraint. Elle contient les deux contraintes
+\begin{enumerate}
+\item $\int_{\Ye(\xtk)} \tw_l - w_{l, lin} = 0$
+\item $(\tw_l - w_{l, lin})(p) = (\tw_l - w_{l, lin})(p')$ pour tout couple $(p, p')$ lié par les conditions périodiques \textbf{sans} redondance.
+\end{enumerate}
+Cette matrice sera donc la forme
+\[
+  \D = \left(
+    \begin{matrix}
+      b_1 & \dots & b_{M_{mic}} \\
+      ~ &  \tD & ~\\
+    \end{matrix}
+  \right)
+\]
+où $\tD \in \mathcal{M}_{(M_{mic}, \smbox{Nbaretes})}(\R)$ est la matrice qui force les conditions periodiques. Elle est de la forme suivante pour
+notre numérotation des noeuds :
+\[
+  \tD^t = \left(
+    \begin{tabular}{p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}}
+      Liens entre angles
+      $(1)\leftrightarrow(2)$,
+      $(3)\leftrightarrow(4)$,
+      $(1)\leftrightarrow(4)$
+      &
+        Liens horizotaux sur les côtés droite et gauche
+      &
+        Liens verticaux sur les côtés droite et gauche
+      &
+        0 pour les noeuds du centre
+    \end{tabular}
+  \right)
+\]
+On peut montrer que pour la containte (1), on peut prendre 
+\[
+  b_i = \int_{\Ye} \psi_i.
+\]
+
+\section{Implémentation du code}
+
+Nous allons maintenant développer quelques éléments important à la compréhension du code. 
 \end{document}
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t
 %%% End:
+
+
+% Après second changement de variable $x\rightarrow x +\bx$ on travaille avec les nouvelles fonctions $\eta_i = \varepsilon w_i(\bx, (x-\bx)/\varepsilon)$.
+% On voudrait montrer que ces nouvelles fonctions résolvent le problème \autoref{eq:pbcelleta}
+
+% pour cela, on peut résonner par équivalence en faisant le chemin inverse en faisant les changements de variables inverses
+% \begin{enumerate}
+% \item $x\rightarrow x+\bx$
+% \item $x\rightarrow \varepsilon x$
+% \end{enumerate}
+% \begin{rmq}
+%   Par des arguments de pseudo périodicité on peut montrer que le premier changement de variable ne change pas $A(x, x/\varepsilon)$.
+% \end{rmq}
+
+avec une disjonction de cas on trouve
+\begin{equation}
+  \begin{aligned}
+    &\begin{cases}
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon) B_1(\xtk, x/\varepsilon) (\nabla w_1)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon) B_2(\xtk, x/\varepsilon) (\nabla w_1)_2 \nabla_x \phi(x) dx = 0 \\
+    \end{cases} && l=1\\
+    \text{et}~~
+    &\begin{cases}
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)B_1(\xtk, x/\varepsilon) (\nabla w_2)_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)B_2(\xtk, x/\varepsilon) (\nabla w_2)_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases} && l=2\\
+    \iff
+    &\begin{cases}
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)B(\xtk, x/\varepsilon) \nabla w_1 \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)B(\xtk, x/\varepsilon) \nabla w_2 \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases} \\
+    \iff
+    &\begin{cases}
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)\nabla_x \tw_1(\xtk, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\
+      \int_{\Ye(\xtk)} A(\xtk, x/\varepsilon)\nabla_x \tw_2(\xtk, x/\varepsilon) \nabla_x \phi(x) dx = 0 \\ 
+    \end{cases}
+  \end{aligned}
+\end{equation}

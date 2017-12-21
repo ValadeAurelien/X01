@@ -24,20 +24,28 @@ for i=1:NbaretesNC/4
     PP(4+NbaretesNC-i+1, 3+NbaretesNC/4+i) = -1;
 end
 
-
+bs = zeros(Nbpt, 1);
 for l=1:Nbtri
-    S1=Coorneu(Numtri(l, 1), :);
-    S2=Coorneu(Numtri(l, 2), :);
-    S3=Coorneu(Numtri(l, 3), :);
-    Mel=matM_elem(S1, S2, S3);
-    for i=1:3
-        I = Numtri(l, i);
-        for j=1:3
-            J = Numtri(l, j);
-            MM(I, J) = MM(I, J) + Mel(i, j);
-        end
-    end 
+    bs(Numtri(l, :)') = bs(Numtri(l, :)') + ...
+       det( [ 1 1 1 ;
+              Coorneu(Numtri(l, :)', :)' ] )/4;
 end
-
-PP = [ 2*diag(MM) PP ];
+PP = [ bs PP ];
 PP = sparse(PP);
+
+
+% $$$ for l=1:Nbtri
+% $$$     S1=Coorneu(Numtri(l, 1), :);
+% $$$     S2=Coorneu(Numtri(l, 2), :);
+% $$$     S3=Coorneu(Numtri(l, 3), :);
+% $$$     Mel=matM_elem(S1, S2, S3);
+% $$$     for i=1:3
+% $$$         I = Numtri(l, i);
+% $$$         for j=1:3
+% $$$             J = Numtri(l, j);
+% $$$             MM(I, J) = MM(I, J) + Mel(i, j);
+% $$$         end
+% $$$     end 
+% $$$ end
+% $$$ 
+% $$$ PP = [ 2*diag(MM) PP ];

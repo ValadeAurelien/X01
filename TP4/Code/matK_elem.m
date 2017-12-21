@@ -80,17 +80,31 @@ if (fourpointsKquad)
 
     Kel = Kel_q * 2 * epsilon * abs(det(Jacobian));
 
-    % i
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %                                                        fin de la routine
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 else
     Xq = [ (x1 + x2 + x3)  (y1 + y2 + y3)] / 3;
-    Kel = epsilon * D/2 * ...
+    Kel = epsilon^2 * D/2 * ...
           calc_K_contrib(Atype, epsilon, ...
                          Xq(1), Xq(2), macro_Atype, macro_epsilon, ...
                          S1, S2, S3, ...
                          micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
                          micro_Numtri, micro_Nbaretes, ...
                          micro_PP);
+% $$$     n = [ y2-y3 x3-x2;
+% $$$           y3-y1 x1-x3;
+% $$$           y1-y2 x1-x2];
+% $$$     Kel2 = zeros(3,3);
+% $$$     for i=1:3
+% $$$         for j=1:3
+% $$$             Kel2(i, j) = n(i, 1)*n(j,1) + ...
+% $$$                 n(i, 2)*n(j, 2);
+% $$$         end
+% $$$     end
+% $$$     disp(sprintf('%.7f %.7f %.7f', norm(Kel), norm(Kel2), norm(Kel)/norm(Kel2)));
 end
+
+
+% i
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                        fin de la routine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

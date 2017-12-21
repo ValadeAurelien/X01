@@ -44,7 +44,7 @@ micro_PP = calc_constr_mat(micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
 % boucle sur les triangles
 % ------------------------
 parfor_progress(Nbtri);
-for l=1:Nbtri
+parfor l=1:Nbtri
     % Coordonnees des sommets du triangles
     % A COMPLETER
     S1=Coorneu(Numtri(l, 1), :);

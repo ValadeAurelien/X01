@@ -6,7 +6,6 @@ function K_kl = calc_K_contrib(Atype, epsilon, ...
 
 %%% constructions des matrices %%%
 KK = sparse(Nbpt,Nbpt); % matrice de rigidite
-                        % MM = sparse(Nbpt,Nbpt); % matrice de rigidite
 for l=1:Nbtri
    % Coordonnees des sommets du triangles
     % A COMPLETER
@@ -17,14 +16,12 @@ for l=1:Nbtri
     Kel=matK_elem_pbcell(S1, S2, S3, Atype, epsilon, ...
                          macro_x, macro_y, macro_Atype, ...
                          macro_epsilon);
-    %Mel=matM_elem(S1, S2, S3);
     % On fait l'assemmblage de la matrice globale et du second membre
     % A COMPLETER
     for i=1:3
         I = Numtri(l, i);
         for j=1:3
             J = Numtri(l, j);
-            %MM(I, J) = MM(I, J) + Mel(i, j);
             KK(I, J) = KK(I, J) + Kel(i, j);
         end
     end     
@@ -53,26 +50,26 @@ Kconstr = [ KK PP                ;
 Uconst = Kconstr \ Lconstr;
 Usol = Uconst(1:Nbpt, :);
 
-
-figure();
-set(gca,'DataAspectRatio',[1,1,1])
-plot([x1 x2 x3], ...
-     [y1 y2 y3], 'o', 'Color', 'r');
-hold on;
-text(x1, y1, '1');
-text(x2, y2, '2');
-text(x3, y3, '3');
-plot([macro_x], ...
-     [macro_y], 'o', 'Color', 'b');
-plot(macro_x + Coorneu(:,1), macro_y + Coorneu(:,2), '.', 'Color', 'k');
-hold off;
-affiche(macro_sol_1, Numtri, Coorneu, 'lambda 1');
-affiche(macro_sol_2, Numtri, Coorneu, 'lambda 2');
-affiche(macro_sol_3, Numtri, Coorneu, 'lambda 3');
-affiche(Usol(:,1)- macro_sol_1, Numtri, Coorneu, '1');
-affiche(Usol(:,2)- macro_sol_2, Numtri, Coorneu, '2');
-affiche(Usol(:,3)- macro_sol_3, Numtri, Coorneu, '3');
-
-keyboard;
+% $$$ 
+% $$$ figure();
+% $$$ set(gca,'DataAspectRatio',[1,1,1])
+% $$$ plot([x1 x2 x3], ...
+% $$$      [y1 y2 y3], 'o', 'Color', 'r');
+% $$$ hold on;
+% $$$ text(x1, y1, '1');
+% $$$ text(x2, y2, '2');
+% $$$ text(x3, y3, '3');
+% $$$ plot([macro_x], ...
+% $$$      [macro_y], 'o', 'Color', 'b');
+% $$$ plot(macro_x + Coorneu(:,1), macro_y + Coorneu(:,2), '.', 'Color', 'k');
+% $$$ hold off;
+% $$$ affiche(macro_sol_1, Numtri, Coorneu, 'lambda 1');
+% $$$ affiche(macro_sol_2, Numtri, Coorneu, 'lambda 2');
+% $$$ affiche(macro_sol_3, Numtri, Coorneu, 'lambda 3');
+% $$$ affiche(Usol(:,1)- macro_sol_1, Numtri, Coorneu, '1');
+% $$$ affiche(Usol(:,2)- macro_sol_2, Numtri, Coorneu, '2');
+% $$$ affiche(Usol(:,3)- macro_sol_3, Numtri, Coorneu, '3');
+% $$$ 
+% $$$ keyboard;
 
 K_kl = Usol'*KK*Usol;
