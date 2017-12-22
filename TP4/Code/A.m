@@ -11,6 +11,8 @@ function val = A(x, y, Atype, epsilon, ...
 % OUTPUT - val: valeur de la matrice sur ce point.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Partie micro  %%%
 if epsilon>=0
     if (Atype == 1)
         val = [1 0; 0 1];
@@ -41,6 +43,8 @@ else %%% On veut récupérer la matrice homogène %%%
     end
 end
 
+%%% Partie macro  %%%
+%%% Inutilisée jusqu'à présent  %%%
 if (macro_Atype == 1)
     val = val * [1 0; 0 1];
 elseif (macro_Atype == 2)
@@ -54,6 +58,4 @@ elseif (macro_Atype == 5)
 elseif (macro_Atype == 6)
     val = val * sin(10*macro_x*macro_epsilon)*eye(2);
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                     fin de la fonction
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

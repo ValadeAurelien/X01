@@ -19,33 +19,44 @@ namemshs = {'geoms/geomCarre1.msh', 'geoms/geomCarre2.msh', 'geoms/geomCarre3.ms
 namemshs_pbcell = {'geoms_per/geomCarre1.msh', 'geoms_per/geomCarre2.msh', 'geoms_per/geomCarre3.msh', 'geoms_per/geomCarre4.msh', 'geoms_per/geomCarre5.msh', 'geoms_per/geomCarre6.msh', 'geoms_per/geomCarre7.msh', 'geoms_per/geomCarre8.msh', 'geoms_per/geomCarre9.msh', 'geoms_per/geomCarre10.msh', 'geoms_per/geomCarre11.msh', 'geoms_per/geomCarre12.msh', 'geoms_per/geomCarre13.msh', 'geoms_per/geomCarre14.msh', 'geoms_per/geomCarre15.msh', 'geoms_per/geomCarre16.msh', 'geoms_per/geomCarre17.msh', 'geoms_per/geomCarre18.msh', 'geoms_per/geomCarre19.msh', 'geoms_per/geomCarre20.msh'};
 
 %%% PARAMETRES A RENTRER %%%
+
 msh=11;
-msh_pbcell=11;
-validation = 1; 
-validation_curves = 1;
-visualisation = 1; % 0, 1 (juste les diff), 2 (tout), 3 (avec A et
-                   % F)
-fourpointsKquad=0;
-macro_Atype = 1;  % 1(Id), 2(i), 3(ii), 4(iii), 5(iv) 6(test)
-macro_epsilon = 1; % eps<0 --> homo % pas important ici. 
-                   % ATTENTION le epsilon du code est l'inverse du epsilon théorique
-Atype = 1;
+msh_pbcell=13;
+fourpointsKquad=0; %Quadrature à un point ou quatre
+
+%%% Variation de A selon la première variable (macro)  %%%
+macro_Atype = 1;   % 1(Id), 2(i), 3(ii), 4(iii), 5(iv) 6(test)
+macro_epsilon = 1; % ATTENTION le epsilon du code est l'inverse du
+                   % epsilon théorique
+ 
+%%% Variation de A selon la seconde variable (micro) %%%
+Atype = 4;   
 epsilon = floor(10/hs(msh))
-bac_a_sable = 1;
-vareps=0; % variation de epsilon et comparaison avec le cas homo
-vareta=0; % variation et convergence de Ahom en fonction de eta
-varmsh=0; % variation et convergence de Ahom en fonction du pas
+
+[Nbpt,Nbtri,Coorneu,Refneu,Numtri,Reftri,Nbaretes,Numaretes, ...
+ Refaretes]=lecture_msh(namemshs{msh});  % Pour affichage
+
+[UU, ~, ~] =  principal_dirichlet_aux(hs(msh), namemshs{msh}, namemshs_pbcell{msh_pbcell}, ...
+                                      macro_Atype, macro_epsilon, ...
+                                      Atype, epsilon, fourpointsKquad);
+affiche(UU, Numtri, Coorneu, 'test');
 
 
 
-%%% BAC A SABLE %%%
-if (bac_a_sable)
-    [Nbpt,Nbtri,Coorneu,Refneu,Numtri,Reftri,Nbaretes,Numaretes,Refaretes]=lecture_msh(namemshs{msh});
-    [UU, ~, ~] =  principal_dirichlet_aux(hs(msh), namemshs{msh}, namemshs_pbcell{msh_pbcell}, ...
-                                          macro_Atype, macro_epsilon, ...
-                                          Atype, epsilon, fourpointsKquad);
-    affiche(UU, Numtri, Coorneu, 'test');
-end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -25,12 +25,6 @@ x1 = S1(1); y1 = S1(2);
 x2 = S2(1); y2 = S2(2);
 x3 = S3(1); y3 = S3(2);
 
-% $$$ % les 3 normales a l'arete opposees (de la longueur de l'arete)
-% $$$ norm = zeros(3, 2);
-% $$$ norm(1, :) = [y2-y3, x3-x2];
-% $$$ norm(2, :) = [y3-y1, x1-x3];
-% $$$ norm(3, :) = [y1-y2, x2-x1];
-
 % D est, au signe pres, deux fois l'aire du triangle
 D = ((x2-x1)*(y3-y1) - (y2-y1)*(x3-x1));
 if (abs(D) <= eps) 
@@ -38,6 +32,7 @@ if (abs(D) <= eps)
     error('l aire d un triangle est nulle!!!'); 
 end;
 
+%%% Quadrature à quatres points  %%%
 if (fourpointsKquad)
     % Transformation F_l du triangle de reference vers le triangle physique
     F_l = @(x1, x2, x3, y1, y2, y3, xref, yref) ...
@@ -55,7 +50,7 @@ if (fourpointsKquad)
     % Poids et points
     w1 = -9/32; w234 = 25/96;
 
-    % Integrale de A
+    % Integrale de K_q
     Kel_q = w1*   calc_K_contrib(Atype, epsilon, ...
                                  X1q(1), X1q(2), macro_Atype, macro_epsilon, ...
                                  S1, S2, S3, ...
@@ -78,11 +73,16 @@ if (fourpointsKquad)
                                  micro_Numtri, micro_Nbaretes, micro_PP) ...
                   );
 
+    %%% Mauvaise formule....  %%%
     Kel = Kel_q * 2 * epsilon * abs(det(Jacobian));
 
-
+%%% Quadrature à un point  %%%
 else
+    %%% Quadrature au barycentre  %%%
     Xq = [ (x1 + x2 + x3)  (y1 + y2 + y3)] / 3;
+   
+    %%% epsilon ou epsilon^2 ? %%%
+    %%% De toute manière l'erreur n'est pas contante  %%%
     Kel = epsilon^2 * D/2 * ...
           calc_K_contrib(Atype, epsilon, ...
                          Xq(1), Xq(2), macro_Atype, macro_epsilon, ...
@@ -90,21 +90,17 @@ else
                          micro_Nbpt, micro_Nbtri, micro_Coorneu, ...
                          micro_Numtri, micro_Nbaretes, ...
                          micro_PP);
-% $$$     n = [ y2-y3 x3-x2;
-% $$$           y3-y1 x1-x3;
-% $$$           y1-y2 x1-x2];
-% $$$     Kel2 = zeros(3,3);
-% $$$     for i=1:3
-% $$$         for j=1:3
-% $$$             Kel2(i, j) = n(i, 1)*n(j,1) + ...
-% $$$                 n(i, 2)*n(j, 2);
-% $$$         end
-% $$$     end
-% $$$     disp(sprintf('%.7f %.7f %.7f', norm(Kel), norm(Kel2), norm(Kel)/norm(Kel2)));
 end
 
-
-% i
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                        fin de la routine
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Décommenter pour comparer avec la solution du TP1  %%%
+% $$$ n = [ y2-y3 x3-x2;
+% $$$       y3-y1 x1-x3;
+% $$$       y1-y2 x1-x2];
+% $$$ Kel2 = zeros(3,3);
+% $$$ for i=1:3
+% $$$     for j=1:3
+% $$$         Kel2(i, j) = n(i, 1)*n(j,1) + ...
+% $$$             n(i, 2)*n(j, 2);
+% $$$     end
+% $$$ end
+% $$$ disp(sprintf('%.7f %.7f %.7f', norm(Kel), norm(Kel2), norm(Kel)/norm(Kel2)));

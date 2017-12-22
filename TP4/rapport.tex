@@ -23,7 +23,6 @@
 	urlcolor={blue!80!black}
 }
 
-
 % MACROS
 \usepackage{xparse}
 \newcommand{\smbox}[1]{\mbox{\footnotesize #1}}
@@ -66,8 +65,10 @@
 \newcommand{\bpsi}{\bm{\psi}}
 \newcommand{\xtk}{x_{T,k}}
 
-
-
+\newcommand{\funcin}{\item[\textcolor{red}{$\bm{\rightarrow}$}]}
+\newcommand{\funcout}{\item[\textcolor{red}{$\bm{\leftarrow}$}]}
+\newcommand{\loopin}{\item[\textcolor{blue}{\textbullet}]}
+\newcommand{\loopout}{\item[\textcolor{blue}{\textbullet}]}
 
 
 \title{Rapport TP X01 \\ TP4}
@@ -95,7 +96,7 @@ microscopique tende vers zéro, il est alors impossible d'attaquer le problème 
 des méthodes numériques plus efficaces quitte à faire des approximations.
 
 La littérature semble être fournie en ce qui concerne l'approche analytique de ce genre de problème multi-échelles, cependant peu d'outils numériques
-semblent être disponibles aujourd'hui, ce à quoi le travail présenté dans ce papier veut remédier. 
+seraient disponibles aujourd'hui, ce à quoi le travail présenté dans ce papier veut remédier en proposant ce code MATLAB court, modulable et parallélisable.
 
 \subsection{Cadre mathématique de la résolution}
 
@@ -122,7 +123,7 @@ L'étude présentée dans ce papier porte sur des méthodes d'éléments finis (
 \end{rmq}
 
 \begin{rmq}
-  La dépendance en $\varepsilon$ de $\Ae$ n'est pas forcément de la forme vue en cours, \ie périodique $\Ae(x, x/\varepsilon)$, mais elle peut être
+  La dépendance en $\varepsilon$ de $\Ae$ n'est pas forcément de la forme vue en cours, \ie périodique $\Ae(x/\varepsilon)$, mais elle peut être
   quasi-périodique $\Ae(x, x/\varepsilon)$, ou bien même implicite, bien qu'on ne considère dans la suite que ce cas simple. Il est cependant nécessaire
   d'avoir pour tout $\varepsilon$ les propriétés suivantes :
   \[
@@ -131,9 +132,13 @@ L'étude présentée dans ce papier porte sur des méthodes d'éléments finis (
   en tous points pour pouvoir prouver que le problème variationnel vu en \autoref{sec:pbvar} est bien posé.
 \end{rmq}
 
-Cette formulation permet de mettre en exergue la dépendance en $\varepsilon$ qui est l'échelle la plus petite du problème, et qui tend usuellement vers
-zéro. C'est cette dépendance qui est au centre du questionnement. En effet il ne suffit pas de trouver une solution $\ue$ explicite en $\varepsilon$ et de
-faire tendre $\varepsilon$ vers zéro pour trouver $u^0$. La convergence n'est généralement que faible dans $L^2$ :
+\begin{rmq}
+  Dans notre code on traitera uniquement le cas où $\partial \Omega_N = \emptyset$.
+\end{rmq}
+Cette formulation permet de mettre en exergue la dépendance en $\varepsilon$ qui est l'échelle la plus petite du problème, et qui tend usuellement
+vers zéro. C'est cette dépendance qui est au centre du questionnement. En effet il ne suffit pas de trouver une solution $\ue$ explicite en
+$\varepsilon$ et de faire tendre $\varepsilon$ vers zéro pour trouver $u^0$ -- ce qui est de plus impossible analytiquement dans le cas général. La
+convergence n'est généralement que faible dans $L^2$ :
 \[
   \lim_{\varepsilon \to 0} \int_\Omega \ue \phi = \int_\Omega u^0 \phi \qquad \forall \phi \in L^2(\Omega).
 \]
@@ -212,26 +217,30 @@ et on peut finalement résoudre le système linéaire homogénéisé :
   \K U = L
 \]
 avec $\K_{ij} = \int_\Omega (\Ah \varphi_i)\cdot \varphi_j, ~ U_i = \uh(S_i)$ et $L_i = l(\varphi_i) - \int_\Omega (\Ah g_D)\cdot \varphi_i$.
-
-Le gros inconvénient de cette méthode étant qui faut préalablement calculer le tenseur homogénéisé $\Ah$ et ce théoriquement en tout point de $\Omega$ de
+\begin{rmq}
+  Dans notre cas, $d=2$.
+\end{rmq}
+Le gros inconvénient de cette méthode étant qui faut préalablement calculer le tenseur homogénéisé $\Ah$ théoriquement en tout point de $\Omega$ de
 l'espace discrétisé.
 
 
 \subsection{Différences et apport de la nouvelle méthode}
 
-La méthode de la FE-HMM (\emph{finite elements heterogenous multi-scale method}) présente tous les avantages d'une méthode d'homogénéisation, mais permet
-en plus d'éviter le calcul de $\Ah(\bx)$ en un grand nombre des points. On peut ainsi travailler exclusivement avec comme entrée les données initiales,
-et calculer le moins de données intermédiaires.
+La méthode de la FE-HMM (\emph{finite elements heterogenous multi-scale method}) présente tous les avantages d'une méthode d'homogénéisation, mais
+permet en plus d'éviter le calcul de $\Ah(\bx)$ au préalable. On peut ainsi travailler exclusivement avec comme entrée les données initiales, et
+calculer le moins de données intermédiaires. La méthode n'est pas mathématiquement plus légère mais permet de faire en moins d'opérations découplées
+le même travail. Ici, on prévoit de calculer directement la contribution de chaque cellule à la matrice de rigidité globale. De plus ce calcul est
+complètement parallélisable !
 
 Deux différentes échelles se distinguent :
 \begin{itemize}
 \item la macro-échelle, de taille caractéristique de maillage $H$
 \item et la micro-échelle, de taille caractéristique de maillage $h$,
 \end{itemize}
-la première étant celle associée du système physique, et la seconde étant une échelle arbitrairement plus petite dont l'usage sera présisé plus loin.
+la première étant celle associée du système physique, et la seconde étant une échelle arbitrairement plus petite dont l'usage sera précisé plus loin.
 
 \begin{rmq}
-  On parlera dans la suite de macro-maillage (resp. micro-) composé de macro-cellules (resp. micro-) par racourcis de langage pour désigner
+  On parlera dans la suite de macro-maillage (resp. micro-) composé de macro-cellules (resp. micro-) par raccourci de langage pour désigner
   les quantités liées à la macro-échelle (resp. micro-). 
 \end{rmq}
 
@@ -244,14 +253,14 @@ Sont proposées deux quadratures :
   en considérant une maille centrée en $(0, 0)$,
 \end{itemize}
 auxquelles on pourrait ajouter d'autres quadratures d'ordre plus élevé par exemple. On va considérer dans la suite que l'on travaille dans le cas de la
-quadrature à quatres points.
+quadrature à quartes points.
 
 \begin{rmq}
-  Nous allons dans notre code reprendre la quadrature à quatre points proposée dans le TP1 à la place de la quadrature de Gausse-Legendre.
+  Nous allons dans notre code reprendre la quadrature à quatre points proposée dans le TP1 à la place de la quadrature de Gauss-Legendre.
 \end{rmq}
 
 Autour de chaque point de cette quadrature on forme un carré de côté $\delta \ll H$. C'est sur ces espaces que l'on va résoudre les problèmes de
-cellules, et c'est cette échelle que nous appelont micro-échelle.
+cellules, et c'est cette échelle que nous appelons micro-échelle. 
 
 \begin{rmq}
   On utilise dans la suite des micro-maillages de côté $\delta = \varepsilon$, ce qui amène d'après le papier à un code robuste et indépendant de
@@ -261,15 +270,13 @@ cellules, et c'est cette échelle que nous appelont micro-échelle.
 
 \subsection{Modification analytique des problèmes de cellule}
 
-Le problèmes de cellule sur lesquels on travaille sont des problèmes modifiés qui permettent, comme précisé précédemment, de ne pas calculer $\Ah$ mais
-directement la matrice de rigidité à partir des données initiales. Les calculs suivant démontrent comment, en partant des équations vues en cours, on
-peut retrouver les problèmes de cellule modifiés qui seront résolus dans le code.
+Le problèmes de cellule sur lesquels on travaille sont des problèmes modifiés qui permettent, comme précisé précédemment, de ne pas calculer $\Ah$
+mais directement la contribution locale à la matrice de rigidité à partir des données initiales. Les calculs suivant démontrent comment, en partant
+des équations vues en cours, on peut retrouver les problèmes de cellule modifiés qui seront résolus dans le code dans un cadre plus général puisqu'on
+se situe dans le cadre ou $\Ae$ est quasi-périodique. Ces problèmes sont au nombre de sommets par cellule. Comme on utilise uniquement des simplexes
+de cimentions deux, on aura donc trois problèmes modifiés par macro-cellule. Pour faire l'analogie avec les codes vus dans les TP précédents, ces
+problèmes permettent en réalité de conduire directement les matrices élémentaires \texttt{Kel} de la matrice de rigidité.
 
-\begin{rmq}
-  Ces problèmes sont au nombre de sommets par cellule. Comme on utilise uniquement des simplexes de dimention deux, on aura donc trois problèmes
-  modifiés par macro-cellule. Pour faire l'analogie avec les codes vus dans les TP précédents, ces problèmes permettent en réalité de contruire
-  directement les matrices élémentaires \texttt{Kel} de la matrice de rigidité.
-\end{rmq}
 
 On veut montre d'abord que l'\autoref{eq:Ahom} peut se réécrire sous la forme de l'\autoref{eq:AhomYeps}:
 
@@ -292,7 +299,7 @@ On procède par changement de variable : $ y \rightarrow x/\varepsilon $ et en f
 la réécriture est immédiate.
 
 On veut ensuite montrer que le problème de cellule est ``translatable'', c'est à dire que l'on peut travailler autour d'un point quelconque
-$\bx$. Cela est direct si on remarque quela fonction étant périodique et l'interval d'integration étant précisément un interval de périodicité de la
+$\bx$. Cela est direct si on remarque que, la fonction étant périodique et l'intervalle d'intégrations étant précisément un intervalle de périodicité de la
 fonction, la translation de ce dernier n'influe pas sur l'intégrale :
 \begin{equation}
   \label{eq:pbcelletat}
@@ -437,8 +444,8 @@ avec
   \nabla_x \tw_l(\xtk, x/\varepsilon) = B(\xtk, x/\varepsilon) \nabla_x w_l(\xtk).
 \]
 
-Il est important de noter qu'il ne s'agit plus de résoudre un problème hyperbollique comme jusqu'à présent, puisqu'une contrainte supplémentaire est
-imposée :
+Il est important de noter qu'il ne s'agit plus de résoudre un problème elliptique comme jusqu'à présent, puisqu'une contrainte supplémentaire est
+imposée par les équations :
 \[
   \tw_l \in w_{l, lin} + \Hd(\Ye).
 \]
@@ -451,10 +458,10 @@ imposée :
 \subsubsection{Système contraint}
 
 
-En suivant les récommandation du papier, on va donc changer le système à résoudre en passant par une méthode lagrangienne. Cette nouvelle formulation
+En suivant les recommandations du papier, on va donc changer le système à résoudre en passant par une méthode Lagrangienne. Cette nouvelle formulation
 devra donc prendre en compte les deux contraintes en présence :
 \begin{itemize}
-\item La périodicité des problèmes de cellule modifiés
+\item La pseudo-périodicité des problèmes de cellule modifiés
 \item La contrainte sur l'espace de définition de la solution.
 \end{itemize}
 Discrétisons nos espaces,  soient
@@ -473,7 +480,7 @@ Les inconnues sont maintenant les vecteurs $\balpha_l$, le reste étant connu ou
   $\balpha_l$.
 \end{rmq}
 On va poser la matrice $\D$ qui
-regroupera nos contraintes, et on se donne la matrice de rigidité locale $\Ktk$ calculée de manière classique sur l'intervale $\Ye(\xtk)$. On va
+regroupera nos contraintes, et on se donne la matrice de rigidité locale $\Ktk$ calculée de manière classique sur l'intervalle $\Ye(\xtk)$. On va
 chercher à résoudre les systèmes
 \begin{equation}
   \label{eq:sysconst}
@@ -482,7 +489,7 @@ chercher à résoudre les systèmes
     \D^t(\balpha_l - \bbeta_l) = 0 
   \end{cases} \qquad \forall l \in [1, 3]
 \end{equation}
-où $\blambda_l \in \R^C$ est un multiplicateur de lagrange et $C$ le nombre de contraintes. On va réécrire ces systèmes en un seul où les
+où $\blambda_l \in \R^C$ est un multiplicateur de Lagrange et $C$ le nombre de contraintes. On va réécrire ces systèmes en un seul où les
 solutions sont concaténées
 \begin{equation}
   \Ktkc \balphac = \bbetac
@@ -543,13 +550,18 @@ Cette matrice sera donc la forme
 \[
   \D = \left(
     \begin{matrix}
-      b_1 & \dots & b_{M_{mic}} \\
-      ~ &  \tD & ~\\
+      b_1         & ~   \\
+      \vdots      & \tD \\
+      b_{M_{mic}} & ~   \\
     \end{matrix}
   \right)
 \]
-où $\tD \in \mathcal{M}_{(M_{mic}, \smbox{Nbaretes})}(\R)$ est la matrice qui force les conditions periodiques. Elle est de la forme suivante pour
-notre numérotation des noeuds :
+où $\tD \in \mathcal{M}_{M_{mic}, C}(\R)$ est la matrice qui force les conditions périodiques. On a 
+\[
+  C=\underbrace{\mathtt{Nbaretes}/2+1}_{\text{périodicité}}\underbrace{+1}_{\int\hdots = 0}
+\]
+
+Elle est de la forme suivante pour notre numérotation des noeuds :
 \[
   \tD^t = \left(
     \begin{tabular}{p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}}
@@ -558,22 +570,194 @@ notre numérotation des noeuds :
       $(3)\leftrightarrow(4)$,
       $(1)\leftrightarrow(4)$
       &
-        Liens horizotaux sur les côtés droite et gauche
+        Liens horizontaux sur les faces droite et gauche
       &
-        Liens verticaux sur les côtés droite et gauche
+        Liens verticaux sur les faces haute et basse
       &
         0 pour les noeuds du centre
     \end{tabular}
   \right)
 \]
-On peut montrer que pour la containte (1), on peut prendre 
+On peut montrer que pour la contrainte (1), on peut prendre 
 \[
   b_i = \int_{\Ye} \psi_i.
 \]
 
-\section{Implémentation du code}
+\section{Implémentation du code \& résultats intermédiaires obtenus}
 
-Nous allons maintenant développer quelques éléments important à la compréhension du code. 
+Nous allons maintenant développer quelques éléments important à la compréhension du code. Celui-ci couvre la résolution de cas relativement étendus,
+$\Ae$ pseudo-périodique avec des formes modulables, possibilité de faire des quadratures à un ou quatre points par cellule, parallélisation de la
+construction des matrices globales\footnote{On pourrait penser qu'il s'agit d'un luxe, mais la parallélisation en MATLAB d'une boucle \texttt{for} est quasi
+immédiate et le temps gagné sur les tests est considérable.}. Cependant le code ne donne pas de bonne solution, nous allons donc détailler les quelques
+tests fait pour trouver le problème.
+
+\subsection{Présentation globale du code}
+
+Tout d'abord, pour une compréhension globale du code développé, on peut trouver en \autoref{tab:funcs} le détail de l'ensemble des fonctions utilisées
+et la structure du code simplifiée est présentée en \autoref{fig:algo}.
+
+Pour les micro-problèmes, on utilise le même maillage recentré au point de la quadrature, la matrice de contrainte n'a donc à être construite qu'une
+seule fois.
+
+La boucle sur la construction est faite avec un \texttt{parfor} ce qui nous fait gagner en temps de calcul, cependant on ne peut pas directement
+répartir les contributions sur la matrice de rigidité car la parallélisation est rudimentaire sous MATLAB et ne peut pas gérer les problèmes de mutex
+complexes. Il faut donc sommer plus tard, et stocker en attendant.
+\begin{rmq}
+  Il faut enlever le \texttt{parfor} et mettre un \texttt{for} pour afficher / débugger le code qui est dans la boucle. 
+\end{rmq}
+
+On prendra $\varepsilon$ valant $H/10$, bien que la solution en soit indépendante (dans le code aussi semble-t-il à partir d'une certaine valeur). 
+
+\subsection{Problèmes remarqués}
+
+On travaille dans un premier temps avec $\Ae(x, y) = I_2$, avec une quadrature à un seul point. Les projections de la macro base sur les
+micro-maillages semblent être trop basse comme on peut le voir en \autoref{fig:wlins}. On s'attendrait à des résultats dix fois plus grands me
+semble-t-il, mais je ne vois pas d'où le problème pourrait venir.
+
+
+Les problèmes de cellules semblent être bien résolus dans le cas (i) \ie $\tw_l=0,~\forall l \in [1, 3]$ pour tous les points de la quadrature, comme on peut le voir en
+\autoref{fig:ws}, les résultats pourraient être bons pour les cas (iii) et (iv) puisqu'ils ressemblent qualitativement à ceux du TP3 (bien qu'il ne s'agisse
+pas exactement de la même quantité) ce qui est plus difficile à dire pour le cas (v).
+
+
+\begin{rmq}
+  Toutes ces fonctions de plot sont dans la fonction \texttt{calc\_K\_contrib}.
+\end{rmq}
+
+Et la matrice qui en résulte semble respecter les conditions élémentaires
+\begin{itemize}
+\item Symétrique ;
+\item Somme des coefficients sur une ligne nulle.
+\end{itemize}
+Cependant, la matrice de rigidité qui en résulte a de très petits coefficients, et la solution globale est quasi constante à $10^{-4}$, alors qu'on
+s'attendrait à retrouver la solution
+\[
+  u(x, y) = \sin(2\pi x )\sin(2\pi y).
+\]
+On compare avec les coefficients obtenus dans le TP1, et on remarque que la matrice \texttt{Kel} pour chaque matrice est cinq ordres de grandeurs trop
+petite, mais qu'il n'y a pas de coefficient constant liant le bon résultat et celui obtenu, de plus le signe trouvé pas toujours le bon.
+
+Quand on prend $\Ae(x, y)=\Ae(y)$ comme dans les problèmes précédents, les solutions des problèmes de cellule
+\[
+  \tw_l - w_{l, lin}
+\]
+ressemblent qualitativement à celles trouvées dans le TP3, mais sont quelques ordres de grandeurs en dessous... Cela pourrait venir de la contrainte
+sur les intégrales, la micro-matrice de rigidité semblant correspondre. En effet les coefficients de $\D$ sont de l'ordre de l'unité, et les $b_i$ sont
+de l'ordre de $10^{-7}$.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.5\textwidth]{Code/local_cell.png} 
+  \includegraphics[width=.45\textwidth]{Code/w1lin.png} \\
+  \includegraphics[width=.45\textwidth]{Code/w2lin.png}
+  \includegraphics[width=.45\textwidth]{Code/w3lin.png}
+  \caption{Projection des éléments de la macro-base sur les micro maillages. L'image de la cellule locale n'est pas très lisible, mais de gauche à
+    droite on trouve les sommets 3, 2, 1 en rouge et le maillage est au centre. On voit en bleu le point de la quadrature. }
+  \label{fig:wlins}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.3\textwidth]{Code/w1.png} 
+  \includegraphics[width=.3\textwidth]{Code/w2.png}
+  \includegraphics[width=.3\textwidth]{Code/w3.png} \\
+  \includegraphics[width=.3\textwidth]{Code/w1_3.png} 
+  \includegraphics[width=.3\textwidth]{Code/w2_3.png}
+  \includegraphics[width=.3\textwidth]{Code/w3_3.png} \\
+  \includegraphics[width=.3\textwidth]{Code/w1_4.png} 
+  \includegraphics[width=.3\textwidth]{Code/w2_4.png}
+  \includegraphics[width=.3\textwidth]{Code/w3_4.png} \\
+  \caption{Solutions aux problèmes de cellule différencier avec leur élément de la macro-base locale. Première ligne, cas (i) du TP3, seconde ligne
+    cas (iii) et troisième ligne cas(v). Le cas (ii) donne les mêmes résultats que (i) et le cas (iv) donne le même résultat que (iii). Encore une fois la lisibilité n'est pas au
+    rendez-vous, mais l'ordre de grandeur est de $10^{-6}$ pour le cas (i) et $10^{-5}$ pour les autres cas.}
+  \label{fig:ws}
+\end{figure}
+
+\begin{figure}
+  \fbox{
+  \begin{minipage}{\textwidth}
+  \begin{itemize}
+  \funcin \texttt{principal\_dirichlet\_aux}
+  \item Lecture des maillages
+  \funcin \texttt{calc\_constr\_mat}
+  \item Constuction de la matrice de contraintes $\D$
+  \funcout \texttt{calc\_constr\_mat}
+  \loopin Pour macro-cellule dans le macro-maillage [PARALLELE]
+  \setlength\itemindent{35pt}
+  \funcin \texttt{calc\_constr\_mat}
+  \item Calcul de la contribution de la cellule :
+  \funcin \texttt{matK\_elem}
+  \loopin Pour point dans quadrature
+  \setlength\itemindent{70pt}
+  \funcin \texttt{calc\_K\_contrib}
+  \item Résoudre les trois problèmes modifiés
+  \funcout \texttt{calc\_K\_contrib}
+  \setlength\itemindent{35pt}
+  \loopout Fin Pour point dans quadrature
+  \item Sommer les valeurs de la quadrature
+  \funcout \texttt{matK\_elem}
+  \item Sauvegarder la contribution
+  \item $\hdots$
+  \setlength\itemindent{0pt}
+  \loopout Fin Pour macro-cellule dans le macro-maillage
+  \loopin Pour macro-cellule dans le macro-maillage [SEQUENTIELLE]
+  \setlength\itemindent{35pt}
+  \item Sommer les contributions des cellules pour construire les matrices de masse et rigidité
+  \setlength\itemindent{0pt}
+  \loopout Fin Pour macro-cellule dans le macro-maillage
+  \item Résolution macro système
+  \funcout \texttt{principal\_dirichlet\_aux}
+  \end{itemize}
+  \end{minipage}
+  }
+  \begin{itemize}
+  \item [Légende]
+  \item Opération classique
+  \funcin Entrée dans une fonction
+  \funcout Sortie d'une fonction
+  \loopin Entrée dans une boucle
+  \loopout [Fin $\hdots$] Sortie d'une boucle
+  \end{itemize}
+  \caption{Algorithme simplifié}
+  \label{fig:algo}
+\end{figure}
+
+
+\begin{table}
+  \centering
+  \begin{tabular}{c|p{.5\textwidth}}
+    Fonction                           & Usage                                                                                          \\
+    \hline \hline
+    \texttt{affiche}                   & Affiche une fonction sur un maillage                                                           \\
+    \hline                 
+    \texttt{affichemaillage}           & Affiche un maillage                                                                            \\
+    \hline         
+    \texttt{A}                         & Donne la valeur du tenseur $\Ae$ en $\xtk, \xtk/\varepsilon$                                   \\
+    \hline                       
+    \texttt{calc\_constr\_mat}         & Calcule la matrice de contrainte $\D$                                                          \\
+    \hline         
+    \texttt{calc\_K\_contrib}          & Calcule la contribution d'un point de la quadrature                                            \\
+    \hline          
+    \texttt{f}                         & Retourne le membre de droite pour le problème macro-scopique                                   \\
+    \hline                 
+    \texttt{lecture\_msh}              & Lecture d'un fichier \texttt{msh}                                                              \\
+    \hline             
+    \texttt{matK\_elem}                & Calcule la contribution d'une cellule à la matrice de rigidité globale                           \\
+    \hline               
+    \texttt{matK\_elem\_pbcell}        & Calcule la contribution d'une cellule à la matrice de rigidité micro                             \\
+    \hline        
+    \texttt{matM\_elem}                & Calcule la contribution d'une cellule à la matrice de masse globale                            \\
+    \hline               
+    \texttt{parfor\_progress}          & Utilitaire pour afficher l'avancement (trouvé sur le net)                                      \\
+    \hline         
+    \texttt{principal\_dirichlet\_aux} & Fonction principale de la résolution du problème macro et constructions de toutes les matrices \\
+    \hline
+    \texttt{principal\_dirichlet}      & Script principal d'appel                                                                       \\
+    \hline     
+  \end{tabular}
+  \caption{Récapitulatif des fonctions du code}
+  \label{tab:funcs}
+\end{table}
 \end{document}
 %%% Local Variables:
 %%% mode: latex

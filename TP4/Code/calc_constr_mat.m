@@ -1,10 +1,9 @@
 function PP = calc_constr_mat(Nbpt, Nbtri, Coorneu, Numtri, Nbaretes, ...
                               epsilon)
 
+%%% Matrice de contrainte %%%
 PP = zeros(Nbpt, 1+Nbaretes/2);
-MM = sparse(Nbpt,Nbpt); 
 NbaretesNC = Nbaretes - 4;
-
 for i=1:2
     PP(2*i-1, i) = 1;
     PP(2*i,   i) = -1;
@@ -24,6 +23,10 @@ for i=1:NbaretesNC/4
     PP(4+NbaretesNC-i+1, 3+NbaretesNC/4+i) = -1;
 end
 
+%%% Calcul des intégrales comme dans le papier %%%
+%%% J'ai rapidement regardé, la formule semble correspondre à la
+%%% notre %%%
+
 bs = zeros(Nbpt, 1);
 for l=1:Nbtri
     bs(Numtri(l, :)') = bs(Numtri(l, :)') + ...
@@ -31,9 +34,15 @@ for l=1:Nbtri
               Coorneu(Numtri(l, :)', :)' ] )/4;
 end
 PP = [ bs PP ];
+
+%%% Sparse pour les calculs d'inversion %%%
 PP = sparse(PP);
 
 
+
+%%% Sinon on peut le faire à partir de notre matrice de masse avec
+%%% les coefficients diagonaux  %%%
+% $$$ MM = Sparse(Nbpt, Nbpt);
 % $$$ for l=1:Nbtri
 % $$$     S1=Coorneu(Numtri(l, 1), :);
 % $$$     S2=Coorneu(Numtri(l, 2), :);
